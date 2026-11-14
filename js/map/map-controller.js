@@ -63,7 +63,14 @@ export function initMap({ onPick }) {
 
   map.on('click', function onMapClick(event) {
     const { lat, lng } = event.latlng;
-    onPick(lat, lng);
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+      marker.setPopupContent(
+        `<b>Parcela seleccionada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lng.toFixed(4)}<br><small>Ubicación seleccionada en el mapa</small>`
+      );
+      marker.openPopup();
+    }
+    if (typeof onPick === 'function') onPick(lat, lng);
   });
 }
 

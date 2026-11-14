@@ -3,7 +3,7 @@ import { CRITERIA, normalizeWeights, rankRotations } from './agriculture/rotatio
 import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
-import { initMap } from './map/map-controller.js';
+import { initMap, setMarker } from './map/map-controller.js';
 import { getState, setState, subscribe } from './state.js';
 import { renderClimateCards, renderClimateStatus, renderRotations, startClock } from './ui/dashboard.js';
 import { initForms } from './ui/forms.js';
@@ -54,8 +54,20 @@ function renderAlertCenter(waterDeficit) {
 }
 
 function handleMapPick(lat, lon) {
-  byId('in-lat').value = lat.toFixed(4);
-  byId('in-lon').value = lon.toFixed(4);
+  const latInput = byId('in-lat');
+  const lonInput = byId('in-lon');
+  const districtInput = byId('sel-distrito');
+  const communityInput = byId('in-comunidad');
+
+  if (latInput) latInput.value = lat.toFixed(4);
+  if (lonInput) lonInput.value = lon.toFixed(4);
+  if (districtInput) districtInput.value = '';
+
+  const district = '';
+  const community = (communityInput?.value || '').trim();
+
+  setMarker(lat, lon, { district, community, openPopup: true });
+  setState({ parcel: { ...getState().parcel, lat, lon, district, community } });
 }
 
 async function bootstrap() {

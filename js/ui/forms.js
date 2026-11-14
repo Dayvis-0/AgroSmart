@@ -96,7 +96,10 @@ function toggleParcelPanel() {
 function applyDistrictPreset() {
   const district = selectedDistrict();
   const preset = DISTRICT_COORDS[district];
-  if (!preset) return;
+  if (!preset) {
+    syncParcelState();
+    return;
+  }
   const community = selectedCommunity();
   byId('in-lat').value = preset.lat.toFixed(4);
   byId('in-lon').value = preset.lon.toFixed(4);
