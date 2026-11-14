@@ -48,6 +48,43 @@
   <div class="col" id="col-left">
     <div class="col-header"><div class="dot"></div> DATOS DE PARCELA</div>
 
+    <!-- Ubicar parcela -->
+    <div class="card parcel-filter-panel-inline" id="parcel-filter-panel" aria-hidden="false">
+      <div class="card-title">📍 Ubicar parcela</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Ajustá distrito o coordenadas para centrar el mapa y consultar clima.</div>
+
+      <label for="sel-distrito">Distrito (preset de coordenadas)</label>
+      <select id="sel-distrito">
+        <option value="Andahuaylas">Andahuaylas</option>
+        <option value="Talavera">Talavera</option>
+        <option value="San Jerónimo">San Jerónimo</option>
+        <option value="Pacucha">Pacucha</option>
+        <option value="Kishuará">Kishuará</option>
+        <option value="Turpo">Turpo</option>
+        <option value="Kaquiabamba">Kaquiabamba</option>
+        <option value="Andarapa">Andarapa</option>
+      </select>
+
+      <label for="in-comunidad">Comunidad / Sector <span class="field-hint">(opcional)</span></label>
+      <input type="text" id="in-comunidad" placeholder="Ej. Argama Baja" />
+
+      <div class="input-row">
+        <div>
+          <label for="in-lat">Latitud</label>
+          <input type="number" id="in-lat" value="-13.6539" step="0.0001" min="-90" max="90" />
+        </div>
+        <div>
+          <label for="in-lon">Longitud</label>
+          <input type="number" id="in-lon" value="-73.3875" step="0.0001" min="-180" max="180" />
+        </div>
+      </div>
+
+      <div class="parcel-filter-actions parcel-filter-actions--inline">
+        <button type="button" class="btn btn-secondary" id="btn-buscar-ubicacion" title="Buscar ubicación según distrito y comunidad">🔎 Buscar ubicación</button>
+        <button type="button" class="btn btn-primary" id="btn-consultar">🛰️ Consultar clima</button>
+      </div>
+    </div>
+
     <!-- Ficha del Suelo -->
     <div class="card">
       <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
@@ -165,51 +202,9 @@
     <div class="card map-card">
       <div class="card-title map-card-title">
         <span>🗺️ Visor de Parcela</span>
-        <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="false" aria-controls="parcel-filter-panel" title="Abrir panel para ubicar parcela y consultar clima">
+        <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="true" aria-controls="parcel-filter-panel" title="Ir al panel de ubicación de parcela">
           📍 Ubicar parcela
         </button>
-      </div>
-
-      <!-- Floating location panel over map -->
-      <div id="parcel-filter-panel" class="parcel-filter-panel" aria-hidden="true">
-        <div class="parcel-filter-header">
-          <div>
-            <div class="parcel-filter-heading">Ubicar parcela y consultar clima</div>
-            <div class="parcel-filter-sub">Ajustá distrito o coordenadas para centrar el mapa y pedir datos a NASA POWER.</div>
-          </div>
-          <button type="button" class="parcel-filter-close" id="btn-close-filter" aria-label="Cerrar panel">✕</button>
-        </div>
-
-        <label for="sel-distrito">Distrito (preset de coordenadas)</label>
-        <select id="sel-distrito">
-          <option value="Andahuaylas">Andahuaylas</option>
-          <option value="Talavera">Talavera</option>
-          <option value="San Jerónimo">San Jerónimo</option>
-          <option value="Pacucha">Pacucha</option>
-          <option value="Kishuará">Kishuará</option>
-          <option value="Turpo">Turpo</option>
-          <option value="Kaquiabamba">Kaquiabamba</option>
-          <option value="Andarapa">Andarapa</option>
-        </select>
-
-        <label for="in-comunidad">Comunidad / Sector <span class="field-hint">(opcional)</span></label>
-        <input type="text" id="in-comunidad" placeholder="Ej. Argama Baja" />
-
-        <div class="input-row">
-          <div>
-            <label for="in-lat">Latitud</label>
-            <input type="number" id="in-lat" value="-13.6539" step="0.0001" min="-90" max="90" />
-          </div>
-          <div>
-            <label for="in-lon">Longitud</label>
-            <input type="number" id="in-lon" value="-73.3875" step="0.0001" min="-180" max="180" />
-          </div>
-        </div>
-
-        <div class="parcel-filter-actions">
-          <button type="button" class="btn btn-secondary" id="btn-locate" title="Detectar coordenadas actuales con GPS">📍 Mi ubicación</button>
-          <button type="button" class="btn btn-primary" id="btn-consultar">🛰️ Consultar clima</button>
-        </div>
       </div>
 
       <div id="map"></div>

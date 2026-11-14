@@ -9,6 +9,10 @@ import { alertMessage, busyButton, hideOverlay, showOverlay } from './notificati
 
 const byId = (id) => document.getElementById(id);
 const selectedDistrict = () => byId('sel-distrito').value;
+const selectedCommunity = () => {
+  const node = byId('in-comunidad');
+  return node ? node.value.trim() : '';
+};
 
 const DISTRICT_COORDS = {
   Andahuaylas: { lat: -13.6556, lon: -73.3872 },
@@ -29,16 +33,47 @@ function coordinatesAreValid({ lat, lon }) {
   return !isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
+function syncParcelState() {
+  const { lat, lon } = readCoordinates();
+  const district = selectedDistrict();
+  const community = selectedCommunity();
+  const parcel = { ...getState().parcel, district, community };
+  if (!isNaN(lat)) parcel.lat = lat;
+  if (!isNaN(lon)) parcel.lon = lon;
+  setState({ parcel });
+  return parcel;
+}
+
 function syncMarkerFromInputs() {
   const { lat, lon } = readCoordinates();
   if (isNaN(lat) || isNaN(lon)) return;
-  setMarker(lat, lon, { district: selectedDistrict() });
+  const district = selectedDistrict();
+  const community = selectedCommunity();
+  syncParcelState();
+  setMarker(lat, lon, { district, community });
+}
+
+function isInlineParcelPanel(panel) {
+  return panel && panel.classList.contains('parcel-filter-panel-inline');
 }
 
 function setParcelPanelOpen(open) {
   const panel = byId('parcel-filter-panel');
   const toggle = byId('btn-toggle-filter');
-  if (!panel || !toggle) return;
+  if (!panel) return;
+
+  if (isInlineParcelPanel(panel)) {
+    if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    panel.setAttribute('aria-hidden', 'false');
+    if (open) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const first = byId('sel-distrito');
+      if (first) first.focus({ preventScroll: true });
+    }
+    return;
+  }
+
+  if (!toggle) return;
   panel.classList.toggle('is-open', open);
   panel.setAttribute('aria-hidden', String(!open));
   toggle.setAttribute('aria-expanded', String(open));
@@ -51,6 +86,10 @@ function setParcelPanelOpen(open) {
 function toggleParcelPanel() {
   const panel = byId('parcel-filter-panel');
   if (!panel) return;
+  if (isInlineParcelPanel(panel)) {
+    setParcelPanelOpen(true);
+    return;
+  }
   setParcelPanelOpen(!panel.classList.contains('is-open'));
 }
 
@@ -58,9 +97,11 @@ function applyDistrictPreset() {
   const district = selectedDistrict();
   const preset = DISTRICT_COORDS[district];
   if (!preset) return;
+  const community = selectedCommunity();
   byId('in-lat').value = preset.lat.toFixed(4);
   byId('in-lon').value = preset.lon.toFixed(4);
-  setMarker(preset.lat, preset.lon, { district, zoom: 12 });
+  syncParcelState();
+  setMarker(preset.lat, preset.lon, { district, community, zoom: 12 });
 }
 
 async function handleLocate() {
@@ -70,14 +111,75 @@ async function handleLocate() {
     hideOverlay('map-loading');
     byId('in-lat').value = lat.toFixed(4);
     byId('in-lon').value = lon.toFixed(4);
+    syncParcelState();
+    const district = selectedDistrict();
+    const community = selectedCommunity();
+    const place = [community, district].filter((value) => value && String(value).trim()).join(', ');
     setMarker(lat, lon, {
       zoom: 14,
       openPopup: true,
-      popupHtml: `<b>🎯 Tu ubicación detectada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>Precisión GPS: ~${Math.round(accuracy)} m</small>`
+      popupHtml: `<b>🎯 Tu ubicación detectada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>${place ? `${place} · ` : ''}Precisión GPS: ~${Math.round(accuracy)} m</small>`
     });
   } catch (error) {
     hideOverlay('map-loading');
     alertMessage(error.message);
+  }
+}
+
+async function handleSearchLocation() {
+  const district = selectedDistrict();
+  const community = selectedCommunity();
+  const preset = DISTRICT_COORDS[district];
+  const query = community ? `${community}, ${district}, Andahuaylas, Apurímac, Perú` : '';
+
+  showOverlay('map-loading');
+  try {
+    let lat = preset?.lat;
+    let lon = preset?.lon;
+    let zoom = 12;
+    let foundByGeocode = false;
+
+    if (query) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      if (response.ok) {
+        const results = await response.json();
+        if (Array.isArray(results) && results[0]) {
+          lat = parseFloat(results[0].lat);
+          lon = parseFloat(results[0].lon);
+          zoom = 14;
+          foundByGeocode = true;
+        }
+      }
+    }
+
+    if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
+      throw new Error('No se encontró una ubicación para el distrito seleccionado.');
+    }
+
+    byId('in-lat').value = Number(lat).toFixed(4);
+    byId('in-lon').value = Number(lon).toFixed(4);
+    syncParcelState();
+    const place = [community, district].filter((value) => value && String(value).trim()).join(', ');
+    setMarker(lat, lon, {
+      district,
+      community,
+      zoom,
+      openPopup: true,
+      popupHtml: `<b>📍 Ubicación seleccionada</b><br>Lat: ${Number(lat).toFixed(4)}<br>Lon: ${Number(lon).toFixed(4)}<br><small>${place || district || 'Andahuaylas, Apurímac'}${foundByGeocode ? '' : ' · aproximada por distrito'}</small>`
+    });
+  } catch (error) {
+    if (preset) {
+      byId('in-lat').value = preset.lat.toFixed(4);
+      byId('in-lon').value = preset.lon.toFixed(4);
+      syncParcelState();
+      setMarker(preset.lat, preset.lon, { district, community, zoom: 12, openPopup: true });
+      alertMessage('No se pudo ubicar la comunidad con precisión. Se usó la ubicación aproximada del distrito.');
+    } else {
+      alertMessage(error.message || 'No se pudo buscar la ubicación.');
+    }
+  } finally {
+    hideOverlay('map-loading');
   }
 }
 
@@ -160,17 +262,22 @@ function setupPeriodButtons(chart) {
 export function initForms({ chart, onCompare }) {
   const inLat = byId('in-lat');
   const inLon = byId('in-lon');
+  const inComunidad = byId('in-comunidad');
   const selDistrito = byId('sel-distrito');
   const toggleBtn = byId('btn-toggle-filter');
   const closeBtn = byId('btn-close-filter');
   const panel = byId('parcel-filter-panel');
-  const btnLocate = byId('btn-locate');
+  const btnBuscarUbicacion = byId('btn-buscar-ubicacion');
   const btnConsultar = byId('btn-consultar');
   const btnGuardar = byId('btn-guardar');
   const btnComparar = byId('btn-comparar');
 
   if (inLat) inLat.addEventListener('change', syncMarkerFromInputs);
   if (inLon) inLon.addEventListener('change', syncMarkerFromInputs);
+  if (inComunidad) {
+    inComunidad.addEventListener('input', syncMarkerFromInputs);
+    inComunidad.addEventListener('change', syncMarkerFromInputs);
+  }
   if (selDistrito) selDistrito.addEventListener('change', applyDistrictPreset);
 
   if (toggleBtn) {
@@ -189,20 +296,20 @@ export function initForms({ chart, onCompare }) {
   }
 
   document.addEventListener('click', (event) => {
-    if (!panel || !panel.classList.contains('is-open')) return;
+    if (!panel || isInlineParcelPanel(panel) || !panel.classList.contains('is-open')) return;
     if (panel.contains(event.target)) return;
     if (toggleBtn && (event.target === toggleBtn || toggleBtn.contains(event.target))) return;
     setParcelPanelOpen(false);
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && panel && panel.classList.contains('is-open')) {
+    if (event.key === 'Escape' && panel && !isInlineParcelPanel(panel) && panel.classList.contains('is-open')) {
       setParcelPanelOpen(false);
       if (toggleBtn) toggleBtn.focus();
     }
   });
 
-  if (btnLocate) btnLocate.addEventListener('click', handleLocate);
+  if (btnBuscarUbicacion) btnBuscarUbicacion.addEventListener('click', handleSearchLocation);
   document.addEventListener(LOCATE_EVENT, handleLocate);
   if (btnConsultar) btnConsultar.addEventListener('click', handleClimateQuery);
   if (btnGuardar) btnGuardar.addEventListener('click', handleSaveSoil);

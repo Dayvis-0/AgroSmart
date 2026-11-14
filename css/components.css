@@ -214,6 +214,24 @@
     pointer-events: auto;
   }
 
+  /* Inline mode: panel placed in left column (like original layout) */
+  .parcel-filter-panel-inline {
+    position: static;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    background: var(--bg-card);
+    backdrop-filter: none;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+    transition: none;
+    margin: 12px;
+    padding: 14px;
+  }
+
   .parcel-filter-header {
     display: flex;
     align-items: flex-start;
@@ -236,6 +254,11 @@
     font-size: 11px;
     color: var(--text-secondary);
     line-height: 1.4;
+  }
+
+  .parcel-filter-sub--inline {
+    margin-top: -4px;
+    margin-bottom: 10px;
   }
 
   .parcel-filter-close {
@@ -265,6 +288,10 @@
     margin-top: 0;
     font-size: 11px;
     padding: 8px 10px;
+  }
+
+  .parcel-filter-actions--inline {
+    flex-direction: column;
   }
 
   .field-hint {

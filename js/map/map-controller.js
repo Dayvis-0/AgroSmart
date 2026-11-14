@@ -67,14 +67,15 @@ export function initMap({ onPick }) {
   });
 }
 
-export function setMarker(lat, lon, { district = '', popupHtml, zoom, openPopup = false } = {}) {
+export function setMarker(lat, lon, { district = '', community = '', popupHtml, zoom, openPopup = false } = {}) {
   if (!marker) return;
   marker.setLatLng([lat, lon]);
   if (zoom) map.setView([lat, lon], zoom);
   else map.panTo([lat, lon]);
+  const place = [community, district].filter((value) => value && String(value).trim()).join(', ');
   marker.setPopupContent(
     popupHtml ??
-      `<b>Parcela seleccionada</b><br>Lat: ${parseFloat(lat).toFixed(4)}<br>Lon: ${parseFloat(lon).toFixed(4)}<br><small>${district}, Andahuaylas</small>`
+      `<b>Parcela seleccionada</b><br>Lat: ${parseFloat(lat).toFixed(4)}<br>Lon: ${parseFloat(lon).toFixed(4)}<br><small>${place || 'Andahuaylas, Apurímac'}</small>`
   );
   if (openPopup) marker.openPopup();
 }
