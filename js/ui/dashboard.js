@@ -20,12 +20,19 @@ export function startClock() {
 
 export function renderClimateCards(summary, meta = null) {
   if (!summary) return;
-  document.getElementById('cc-temp').textContent = summary.temp.toFixed(1);
+  const tempAct = document.getElementById('cc-temp-act');
+  if (tempAct) {
+    tempAct.textContent = (summary.tempCurrent ?? summary.temp).toFixed(1);
+  }
+  const tempMedia = document.getElementById('cc-temp');
+  if (tempMedia) {
+    tempMedia.textContent = summary.temp.toFixed(1);
+  }
   document.getElementById('cc-prec').textContent = Math.round(summary.prec);
   document.getElementById('cc-viento').textContent = summary.viento.toFixed(1);
   document.getElementById('cc-rad').textContent = summary.rad.toFixed(1);
 
-  const year = meta?.year ?? (meta?.period?.end ? String(meta.period.end).slice(0, 4) : '2024');
+  const year = meta?.year ?? (meta?.period?.end ? String(meta.period.end).slice(0, 4) : '2026');
   const provider = meta?.provider ?? (meta ? 'NASA POWER' : 'Demo');
   document.querySelectorAll('[data-climate-src]').forEach((node) => {
     const parameter = node.dataset.climateSrc;

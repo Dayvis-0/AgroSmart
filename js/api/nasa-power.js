@@ -84,8 +84,10 @@ function buildSeries(points) {
 function buildSummary(points) {
   const recent = points.slice(-12);
   const annualPrec = recent.reduce((sum, point) => sum + point.prec, 0);
+  const lastPoint = points[points.length - 1];
   return {
     temp: round(average(recent.map((point) => point.temp)) ?? 0),
+    tempCurrent: lastPoint ? round(lastPoint.temp) : 18.5,
     prec: Math.round(annualPrec),
     viento: round(average(recent.map((point) => point.wind)) ?? 0),
     rad: round(average(recent.map((point) => point.rad)) ?? 0),
@@ -139,7 +141,7 @@ function normalizeResponse(payload) {
 function buildUrl({ lat, lon }) {
   const now = new Date();
   const endYear = now.getUTCFullYear();
-  const startYear = endYear - 1;
+  const startYear = endYear - 2;
   const params = new URLSearchParams({
     ...POWER_PARAMS,
     latitude: String(lat),
@@ -150,18 +152,40 @@ function buildUrl({ lat, lon }) {
   return `${POWER_API}?${params.toString()}`;
 }
 
+async function fetchCurrentTemp(lat, lon) {
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`);
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data?.current?.temperature_2m === 'number') {
+        return round(data.current.temperature_2m);
+      }
+    }
+  } catch (err) {
+    console.warn('No se pudo obtener temperatura actual en vivo:', err);
+  }
+  return null;
+}
+
 export async function fetchClimate({ lat, lon }) {
   const key = cacheKey({ lat, lon });
   if (climateCache.has(key)) return climateCache.get(key);
 
   const url = buildUrl({ lat, lon });
-  const response = await fetch(url);
+  const [response, liveTemp] = await Promise.all([
+    fetch(url),
+    fetchCurrentTemp(lat, lon)
+  ]);
+
   if (!response.ok) {
     throw new Error(`NASA POWER respondió ${response.status}. Verifique la conexión e intente nuevamente.`);
   }
 
   const payload = await response.json();
   const normalized = normalizeResponse(payload);
+  if (liveTemp !== null) {
+    normalized.summary.tempCurrent = liveTemp;
+  }
   climateCache.set(key, normalized);
   return normalized;
 }
@@ -171,7 +195,7 @@ export async function fetchDemoClimate() {
   return {
     source: 'demo',
     series: demo.climate.series,
-    summary: demo.climate.summary,
+    summary: { ...demo.climate.summary, tempCurrent: 18.5 },
     waterDeficit: demo.alerts.find((alert) => alert.title === 'Déficit hídrico estacional') ?? null,
     meta: { provider: 'Datos de demostración', year: 2024 }
   };
