@@ -4,6 +4,7 @@ import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
 import { initMap, setMarker } from './map/map-controller.js';
+import { buildComparisonPdf, downloadPdf } from './reports/pdf-report.js';
 import { getState, setState, subscribe } from './state.js';
 import { renderClimateCards, renderClimateStatus, renderRotations, startClock } from './ui/dashboard.js';
 import { initForms } from './ui/forms.js';
@@ -13,6 +14,7 @@ const byId = (id) => document.getElementById(id);
 let rotations = [];
 let baseAlerts = [];
 let defaultAlert = null;
+let currentPdfDoc = null;
 
 async function loadJson(path) {
   const response = await fetch(path);
@@ -36,12 +38,6 @@ async function loadData() {
   return data;
 }
 
-function renderRotationResults() {
-  const { priorities } = getState();
-  const weights = normalizeWeights(CRITERIA.map((criterion) => priorities[criterion.key]));
-  renderRotations(byId('rotaciones-container'), rankRotations(rotations, weights));
-}
-
 function buildAlerts(waterDeficit) {
   const alerts = [...baseAlerts];
   const first = waterDeficit ?? defaultAlert;
@@ -49,8 +45,79 @@ function buildAlerts(waterDeficit) {
   return alerts;
 }
 
-function renderAlertCenter(waterDeficit) {
-  renderAlerts(byId('alerts-container'), buildAlerts(waterDeficit));
+function getRankedRotations() {
+  const { priorities } = getState();
+  const weights = normalizeWeights(CRITERIA.map((criterion) => priorities[criterion.key]));
+  return rankRotations(rotations, weights);
+}
+
+function handleCompareRotations() {
+  const ranked = getRankedRotations();
+  const alerts = buildAlerts(getState().climate?.waterDeficit);
+  const state = getState();
+
+  // 1. Mostrar resultados y alertas en la interfaz
+  const rotContainer = byId('rotaciones-container');
+  const alertsContainer = byId('alerts-container');
+  const cardResultados = byId('card-resultados');
+  const cardAlertas = byId('card-alertas');
+
+  if (rotContainer && cardResultados) {
+    cardResultados.style.display = 'block';
+    renderRotations(rotContainer, ranked);
+  }
+
+  if (alertsContainer && cardAlertas) {
+    cardAlertas.style.display = alerts.length ? 'block' : 'none';
+    renderAlerts(alertsContainer, alerts);
+  }
+
+  // 2. Generar el PDF con diseño profesional en memoria
+  try {
+    currentPdfDoc = buildComparisonPdf({
+      rankedRotations: ranked,
+      alerts,
+      parcel: state.parcel,
+      soil: state.soil,
+      climate: state.climate,
+      priorities: state.priorities
+    });
+  } catch (error) {
+    console.error('Error al generar el PDF de rotaciones:', error);
+  }
+
+  // 3. Hacer visible el botón de descarga de PDF
+  const btnDescargar = byId('btn-descargar-pdf');
+  const btnDescargarCard = byId('btn-descargar-pdf-card');
+  if (btnDescargar) {
+    btnDescargar.style.display = 'inline-flex';
+  }
+  if (btnDescargarCard) {
+    btnDescargarCard.style.display = 'inline-flex';
+  }
+
+  // 4. Desplazamiento suave hacia la sección de resultados
+  if (cardResultados) {
+    cardResultados.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function setupDownloadButtons() {
+  const onDownload = (event) => {
+    event.preventDefault();
+    if (!currentPdfDoc) {
+      handleCompareRotations();
+    }
+    if (currentPdfDoc) {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      downloadPdf(currentPdfDoc, `AgroSmart-Reporte-Rotaciones-${todayStr}.pdf`);
+    }
+  };
+
+  const btnDescargar = byId('btn-descargar-pdf');
+  const btnDescargarCard = byId('btn-descargar-pdf-card');
+  if (btnDescargar) btnDescargar.addEventListener('click', onDownload);
+  if (btnDescargarCard) btnDescargarCard.addEventListener('click', onDownload);
 }
 
 function handleMapPick(lat, lon) {
@@ -112,8 +179,6 @@ async function bootstrap() {
   renderClimateStatus(climate.status || 'idle', climate);
 
   if (crops) renderCrops(byId('crop-grid'), crops, getState().crops);
-  renderAlertCenter(climate.waterDeficit);
-  if (rotations.length) renderRotationResults();
 
   initMap({ onPick: handleMapPick });
 
@@ -128,11 +193,11 @@ async function bootstrap() {
       if (next.summary) renderClimateCards(next.summary, next.meta);
       if (next.series?.[state.period]) chart.update(next.series[state.period]);
       renderClimateStatus(next.status, next);
-      renderAlertCenter(next.waterDeficit ?? (next.source === 'demo' ? defaultAlert : null));
     }
   });
 
-  initForms({ chart, onCompare: renderRotationResults });
+  setupDownloadButtons();
+  initForms({ chart, onCompare: handleCompareRotations });
 }
 
 bootstrap();

@@ -220,12 +220,14 @@ function handleSaveSoil(event) {
 }
 
 function handleCompare(event, onCompare) {
-  const restore = busyButton(event.currentTarget, '⏳ Calculando…');
+  const restore = busyButton(event.currentTarget, '⏳ Procesando…');
   setTimeout(() => {
-    onCompare();
-    restore();
-    byId('card-resultados').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }, 700);
+    try {
+      onCompare();
+    } finally {
+      restore();
+    }
+  }, 400);
 }
 
 function setupCropTags() {

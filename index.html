@@ -302,16 +302,19 @@
       </div>
 
       <button class="btn btn-primary" id="btn-comparar">🔄 Comparar Rotaciones</button>
+      <button class="btn btn-pdf-download" id="btn-descargar-pdf" style="display:none;" title="Descargar informe técnico agronómico en PDF">📥 Descargar Reporte PDF</button>
     </div>
 
-    <!-- Resultados -->
-    <div class="card" id="card-resultados">
-      <div class="card-title">📊 Comparación de Rotaciones</div>
+    <!-- Resultados y alertas: se exportan en PDF al comparar -->
+    <div class="card" id="card-resultados" style="display:none">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+        <div class="card-title" style="margin-bottom:0;">📊 Comparación de Rotaciones</div>
+        <button class="btn btn-secondary" id="btn-descargar-pdf-card" style="display:none; margin-top:0; padding:5px 12px; font-size:11px; width:auto;" title="Descargar informe técnico en PDF">📥 Descargar PDF</button>
+      </div>
       <div id="rotaciones-container"><!-- se rellena con JS --></div>
     </div>
 
-    <!-- Alertas -->
-    <div class="card section-pad">
+    <div class="card section-pad" id="card-alertas" style="display:none">
       <div class="card-title">🔔 Centro de Alertas</div>
       <div id="alerts-container"></div>
     </div>
@@ -325,6 +328,7 @@
 <!-- ═══════════ SCRIPTS ═══════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script type="module" src="js/main.js"></script>
 
 <script>
