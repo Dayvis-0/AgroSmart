@@ -19,9 +19,7 @@
 
 <body>
 
-<!-- ═══════════════════════════════════════════════════
-     TOP BAR
-═══════════════════════════════════════════════════ -->
+<!-- ═══════════ TOP BAR ═══════════ -->
 <header class="topbar">
   <div class="topbar-logo">
     <span class="logo-icon">🌱</span>
@@ -37,27 +35,16 @@
   </div>
 
   <div class="topbar-status">
-    <div class="status-item">
-      <div class="status-dot"></div>
-      <span class="si-label">NASA POWER</span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot"></div>
-      <span class="si-label">NASA GIBS</span>
-    </div>
-    <div class="status-item">
-      <div class="status-dot amber"></div>
-      <span class="si-label">Datos demo</span>
-    </div>
+    <div class="status-item"><div class="status-dot"></div><span class="si-label">NASA POWER</span></div>
+    <div class="status-item"><div class="status-dot"></div><span class="si-label">NASA GIBS</span></div>
+    <div class="status-item"><div class="status-dot amber"></div><span class="si-label">Datos demo</span></div>
   </div>
 </header>
 
-<!-- ═══════════════════════════════════════════════════
-     MAIN GRID
-═══════════════════════════════════════════════════ -->
+<!-- ═══════════ MAIN GRID ═══════════ -->
 <div class="main-grid">
 
-  <!-- ─────────────────── LEFT COLUMN ─────────────────── -->
+  <!-- ─────────── LEFT COLUMN ─────────── -->
   <div class="col" id="col-left">
     <div class="col-header"><div class="dot"></div> DATOS DE PARCELA</div>
 
@@ -92,12 +79,8 @@
       </div>
 
       <div style="display: flex; gap: 8px; margin-top: 10px;">
-        <button type="button" class="btn btn-secondary" style="margin-top:0; padding: 7px 10px; font-size: 11px; white-space: nowrap;" onclick="obtenerMiUbicacion()" title="Detectar coordenadas actuales con GPS">
-          📍 Mi Ubicación
-        </button>
-        <button type="button" class="btn btn-primary" style="margin-top:0;" id="btn-consultar" onclick="consultarClima()">
-          🛰️ Consultar Clima
-        </button>
+        <button type="button" class="btn btn-secondary" style="margin-top:0; padding: 7px 10px; font-size: 11px; white-space: nowrap;" id="btn-locate" title="Detectar coordenadas actuales con GPS">📍 Mi Ubicación</button>
+        <button type="button" class="btn btn-primary" style="margin-top:0;" id="btn-consultar">🛰️ Consultar Clima</button>
       </div>
     </div>
 
@@ -154,7 +137,7 @@
         <label><input type="radio" name="agua" value="mixto" /><span>🔄 Mixto</span></label>
       </div>
 
-      <button class="btn btn-secondary" onclick="guardarFicha()">💾 Guardar Ficha</button>
+      <button class="btn btn-secondary" id="btn-guardar">💾 Guardar Ficha</button>
     </div>
 
     <!-- Estado de Conexión -->
@@ -169,7 +152,7 @@
     </div>
   </div>
 
-  <!-- ─────────────────── CENTER COLUMN ─────────────────── -->
+  <!-- ─────────── CENTER COLUMN ─────────── -->
   <div class="col" id="col-center">
     <div class="col-header"><div class="dot"></div> MONITOREO SATELITAL Y CLIMA</div>
 
@@ -183,34 +166,29 @@
     <!-- Climate Cards -->
     <div class="card">
       <div class="card-title">🌐 Indicadores Climáticos — NASA POWER</div>
+      <div id="climate-status" class="chart-note" style="margin-top:0;margin-bottom:10px;">
+        ℹ️ Datos de demostración cargados. Presione “Consultar Clima” para obtener valores reales de NASA POWER.
+      </div>
       <div class="climate-grid">
         <div class="climate-card">
-          <div class="cc-icon">🌡️</div>
-          <div class="cc-label">Temperatura media</div>
-          <div class="cc-value" id="cc-temp">14.2</div>
-          <div class="cc-unit">°C</div>
-          <div class="cc-src">T2M · 2024 · NASA POWER</div>
+          <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura media</div>
+          <div class="cc-value" id="cc-temp">14.2</div><div class="cc-unit">°C</div>
+          <div class="cc-src" data-climate-src="T2M">T2M · 2024 · Demo</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">🌧️</div>
-          <div class="cc-label">Precipitación anual</div>
-          <div class="cc-value" id="cc-prec">723</div>
-          <div class="cc-unit">mm/año</div>
-          <div class="cc-src">PRECTOTCORR · 2024 · NASA POWER</div>
+          <div class="cc-icon">🌧️</div><div class="cc-label">Precipitación anual</div>
+          <div class="cc-value" id="cc-prec">723</div><div class="cc-unit">mm/año</div>
+          <div class="cc-src" data-climate-src="PRECTOTCORR">PRECTOTCORR · 2024 · Demo</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">💨</div>
-          <div class="cc-label">Viento a 10 m</div>
-          <div class="cc-value" id="cc-viento">3.1</div>
-          <div class="cc-unit">m/s</div>
-          <div class="cc-src">WS10M · 2024 · NASA POWER</div>
+          <div class="cc-icon">💨</div><div class="cc-label">Viento a 10 m</div>
+          <div class="cc-value" id="cc-viento">3.1</div><div class="cc-unit">m/s</div>
+          <div class="cc-src" data-climate-src="WS10M">WS10M · 2024 · Demo</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">☀️</div>
-          <div class="cc-label">Radiación solar</div>
-          <div class="cc-value" id="cc-rad">4.8</div>
-          <div class="cc-unit">kWh/m²/día</div>
-          <div class="cc-src">ALLSKY_SFC_SW_DWN · NASA POWER</div>
+          <div class="cc-icon">☀️</div><div class="cc-label">Radiación solar</div>
+          <div class="cc-value" id="cc-rad">4.8</div><div class="cc-unit">kWh/m²/día</div>
+          <div class="cc-src" data-climate-src="ALLSKY_SFC_SW_DWN">ALLSKY_SFC_SW_DWN · 2024 · Demo</div>
         </div>
       </div>
     </div>
@@ -220,35 +198,28 @@
       <div class="chart-controls">
         <div class="card-title" style="margin:0">📈 Tendencias Mensuales</div>
         <div class="period-btns">
-          <button class="period-btn" onclick="setPeriod('6m',this)">6M</button>
-          <button class="period-btn active" onclick="setPeriod('1a',this)">1A</button>
-          <button class="period-btn" onclick="setPeriod('2a',this)">2A</button>
+          <button class="period-btn" data-period="6m">6M</button>
+          <button class="period-btn active" data-period="1a">1A</button>
+          <button class="period-btn" data-period="2a">2A</button>
         </div>
       </div>
       <div class="chart-wrapper">
         <canvas id="clima-chart"></canvas>
       </div>
-      <div class="chart-note">
-        ⚠️ Fuente: NASA POWER API · Resolución ~50 km · No representa una estación meteorológica local · Datos de demostración
+      <div class="chart-note" id="climate-note">
+        ⚠️ Datos de demostración. NASA POWER ofrece estimaciones con resolución ~50 km y no reemplaza una estación meteorológica local.
       </div>
     </div>
   </div>
 
-  <!-- ─────────────────── RIGHT COLUMN ─────────────────── -->
+  <!-- ─────────── RIGHT COLUMN ─────────── -->
   <div class="col" id="col-right">
     <div class="col-header"><div class="dot"></div> MOTOR DE DECISIÓN AGRÍCOLA</div>
 
     <!-- Cultivos -->
     <div class="card">
       <div class="card-title">🌾 Catálogo de Cultivos</div>
-      <div class="crop-grid" id="crop-grid">
-        <div class="crop-tag selected" onclick="toggleCrop(this)">🥔 Papa</div>
-        <div class="crop-tag selected" onclick="toggleCrop(this)">🌽 Maíz</div>
-        <div class="crop-tag selected" onclick="toggleCrop(this)">🌿 Quinua</div>
-        <div class="crop-tag" onclick="toggleCrop(this)">🫘 Haba</div>
-        <div class="crop-tag" onclick="toggleCrop(this)">🌾 Avena</div>
-        <div class="crop-tag" onclick="toggleCrop(this)">🧅 Cebolla</div>
-      </div>
+      <div class="crop-grid" id="crop-grid"></div>
     </div>
 
     <!-- Prioridades -->
@@ -257,72 +228,44 @@
 
       <div class="slider-row">
         <div class="slider-label">💧 Ahorro de agua</div>
-        <input type="range" min="1" max="5" value="4" oninput="updateSlider(this,'sv-agua')" />
+        <input type="range" min="1" max="5" value="4" id="pr-agua" />
         <div class="slider-val" id="sv-agua">4</div>
       </div>
       <div class="slider-row">
         <div class="slider-label">🌱 Salud del suelo</div>
-        <input type="range" min="1" max="5" value="3" oninput="updateSlider(this,'sv-suelo')" />
+        <input type="range" min="1" max="5" value="3" id="pr-suelo" />
         <div class="slider-val" id="sv-suelo">3</div>
       </div>
       <div class="slider-row">
         <div class="slider-label">📈 Productividad</div>
-        <input type="range" min="1" max="5" value="5" oninput="updateSlider(this,'sv-prod')" />
+        <input type="range" min="1" max="5" value="5" id="pr-prod" />
         <div class="slider-val" id="sv-prod">5</div>
       </div>
       <div class="slider-row">
         <div class="slider-label">💰 Costo-beneficio</div>
-        <input type="range" min="1" max="5" value="3" oninput="updateSlider(this,'sv-costo')" />
+        <input type="range" min="1" max="5" value="3" id="pr-costo" />
         <div class="slider-val" id="sv-costo">3</div>
       </div>
       <div class="slider-row">
         <div class="slider-label">⛈️ Riesgo climático</div>
-        <input type="range" min="1" max="5" value="4" oninput="updateSlider(this,'sv-riesgo')" />
+        <input type="range" min="1" max="5" value="4" id="pr-riesgo" />
         <div class="slider-val" id="sv-riesgo">4</div>
       </div>
 
-      <button class="btn btn-primary" id="btn-comparar" onclick="compararRotaciones()">
-        🔄 Comparar Rotaciones
-      </button>
+      <button class="btn btn-primary" id="btn-comparar">🔄 Comparar Rotaciones</button>
     </div>
 
     <!-- Resultados -->
     <div class="card" id="card-resultados">
       <div class="card-title">📊 Comparación de Rotaciones</div>
-      <div id="rotaciones-container">
-        <!-- se rellena con JS -->
-      </div>
+      <div id="rotaciones-container"><!-- se rellena con JS --></div>
     </div>
 
     <!-- Alertas -->
     <div class="card section-pad">
       <div class="card-title">🔔 Centro de Alertas</div>
-
-      <div class="alert alert-amber">
-        <div class="alert-icon">⚠️</div>
-        <div class="alert-body">
-          <strong>Déficit hídrico estacional</strong>
-          Precipitación abr–ago por debajo de 20 mm/mes. Considerar riego suplementario o cultivos resistentes a sequía.
-        </div>
-      </div>
-
-      <div class="alert alert-info">
-        <div class="alert-icon">ℹ️</div>
-        <div class="alert-body">
-          <strong>Datos de suelo no verificados</strong>
-          Textura y pH marcados como "estimados". Validar con análisis de laboratorio local antes de tomar decisiones.
-        </div>
-      </div>
-
-      <div class="alert alert-info">
-        <div class="alert-icon">ℹ️</div>
-        <div class="alert-body">
-          <strong>Resultados orientativos</strong>
-          Las puntuaciones son indicativas y se basan en reglas agronómicas simplificadas. Consulte a un técnico agrónomo certificado.
-        </div>
-      </div>
+      <div id="alerts-container"></div>
     </div>
-
   </div><!-- /col-right -->
 </div><!-- /main-grid -->
 
@@ -330,419 +273,10 @@
   🛰️ NASA POWER · NASA GIBS · Datos de demostración — No representa una estación meteorológica local ni sustituye el diagnóstico de un especialista agrónomo · AgroSmart v1.0 · NASA Space Apps Challenge 2026
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     SCRIPTS
-═══════════════════════════════════════════════════ -->
+<!-- ═══════════ SCRIPTS ═══════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<script>
-// ── GLOBAL STATE ──────────────────────────────────────
-let map, marker, climaChart;
-const DEFAULT_LAT = -13.6539;
-const DEFAULT_LON = -73.3875;
-
-const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-const CLIMATE_DATA = {
-  '1a': {
-    temp:  [13.1, 13.4, 13.8, 13.2, 12.4, 11.6, 11.2, 11.8, 12.6, 13.4, 13.9, 13.5],
-    prec:  [112,   98,   86,   42,   18,    8,    6,   12,   32,   68,   95,  108],
-    labels: MONTHS
-  },
-  '6m': {
-    temp:  [11.6, 11.2, 11.8, 12.6, 13.4, 13.9],
-    prec:  [  8,    6,   12,   32,   68,   95],
-    labels: ['Jul','Ago','Sep','Oct','Nov','Dic']
-  },
-  '2a': {
-    temp:  [13.0,13.3,13.7,13.1,12.3,11.5,11.1,11.7,12.5,13.3,13.8,13.4,13.1,13.4,13.8,13.2,12.4,11.6,11.2,11.8,12.6,13.4,13.9,13.5],
-    prec:  [115,100,88,45,20,9,7,13,34,70,97,110,112,98,86,42,18,8,6,12,32,68,95,108],
-    labels: ['E','F','M','A','M','J','J','A','S','O','N','D','E','F','M','A','M','J','J','A','S','O','N','D']
-  }
-};
-
-const ROTACIONES_DATA = [
-  {
-    id: 'A',
-    nombre: 'Rotación A',
-    secuencia: 'Papa → Quinua → Haba → Descanso',
-    scores: { agua:85, suelo:90, prod:78, costo:70, riesgo:85 },
-    notas: [
-      { type:'ok', text:'Leguminosa (Haba) aporta nitrógeno al suelo' },
-      { type:'ok', text:'Diversidad de familias reduce presión fitosanitaria' },
-      { type:'warn', text:'Papa requiere control preventivo de plagas y enfermedades' },
-    ],
-    class: 'best',
-    best: true
-  },
-  {
-    id: 'B',
-    nombre: 'Rotación B',
-    secuencia: 'Maíz → Papa → Avena → Haba',
-    scores: { agua:60, suelo:80, prod:85, costo:75, riesgo:70 },
-    notas: [
-      { type:'ok', text:'Alta productividad con ciclos complementarios' },
-      { type:'warn', text:'Mayor demanda hídrica en verano (Maíz)' },
-      { type:'warn', text:'Avena como cultivo de cobertura mejora suelo' },
-    ],
-    class: 'mid',
-    best: false
-  },
-  {
-    id: 'C',
-    nombre: 'Rotación C — Riesgo alto',
-    secuencia: 'Papa → Maíz → Papa (riesgo monocultivo)',
-    scores: { agua:55, suelo:30, prod:70, costo:80, riesgo:40 },
-    notas: [
-      { type:'bad', text:'Repetición de Papa: alto riesgo de rancha y nematodos' },
-      { type:'bad', text:'Monocultivo degrada materia orgánica del suelo' },
-      { type:'warn', text:'Mayor costo fitosanitario a mediano plazo' },
-    ],
-    class: 'low',
-    best: false
-  }
-];
-
-// ── CLOCK ─────────────────────────────────────────────
-function updateClock() {
-  const now = new Date();
-  const opts = { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false };
-  document.getElementById('topbar-time').textContent =
-    now.toLocaleString('es-PE', opts) + ' PET';
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ── MAP ───────────────────────────────────────────────
-function initMap() {
-  map = L.map('map', { zoomControl: true, attributionControl: true });
-  map.setView([DEFAULT_LAT, DEFAULT_LON], 11);
-
-  const MT_KEY = 'BX0HCKl1euG1xsEnS63n';
-  const MT_ATTR = '© <a href="https://www.maptiler.com/copyright/">MapTiler</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
-
-  const darkLayer = L.tileLayer(
-    `https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}.png?key=${MT_KEY}`,
-    { attribution: MT_ATTR, maxZoom: 20, tileSize: 512, zoomOffset: -1 }
-  );
-
-  const satelliteLayer = L.tileLayer(
-    `https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=${MT_KEY}`,
-    { attribution: MT_ATTR, maxZoom: 20, tileSize: 512, zoomOffset: -1 }
-  );
-
-  const topoLayer = L.tileLayer(
-    `https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${MT_KEY}`,
-    { attribution: MT_ATTR, maxZoom: 20, tileSize: 512, zoomOffset: -1 }
-  );
-
-  darkLayer.addTo(map);
-
-  const baseLayers = {
-    '🌑 Oscuro': darkLayer,
-    '🛰️ Satélite': satelliteLayer,
-    '🏔️ Topográfico': topoLayer
-  };
-  const overlays = {};
-  L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
-
-  // Botón tipo Google Maps para centrar en mi ubicación
-  const locateControl = L.control({ position: 'topleft' });
-  locateControl.onAdd = function() {
-    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-    const a = L.DomUtil.create('a', '', div);
-    a.href = '#';
-    a.title = 'Mostrar mi ubicación actual';
-    a.role = 'button';
-    a.setAttribute('aria-label', 'Mostrar mi ubicación actual');
-    a.innerHTML = '🎯';
-    a.style.cssText = 'display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:#111827;color:#00d4ff;font-size:16px;text-decoration:none;cursor:pointer;border-top:1px solid rgba(0,212,255,0.2);';
-    L.DomEvent.disableClickPropagation(div);
-    L.DomEvent.on(a, 'click', function(e) {
-      L.DomEvent.preventDefault(e);
-      obtenerMiUbicacion();
-    });
-    return div;
-  };
-  locateControl.addTo(map);
-
-  marker = L.marker([DEFAULT_LAT, DEFAULT_LON], {
-    title: 'Parcela seleccionada'
-  }).addTo(map);
-
-  marker.bindPopup(
-    `<b>Parcela</b><br>Lat: ${DEFAULT_LAT}<br>Lon: ${DEFAULT_LON}<br><small>Andahuaylas, Apurímac</small>`
-  ).openPopup();
-
-  map.on('click', function(e) {
-    const { lat, lng } = e.latlng;
-    document.getElementById('in-lat').value = lat.toFixed(4);
-    document.getElementById('in-lon').value = lng.toFixed(4);
-    updateMarker(lat, lng);
-  });
-}
-
-function updateMarker(lat, lon) {
-  if (!marker) return;
-  marker.setLatLng([lat, lon]);
-  map.panTo([lat, lon]);
-  const distrito = document.getElementById('sel-distrito').value;
-  marker.setPopupContent(
-    `<b>Parcela seleccionada</b><br>Lat: ${parseFloat(lat).toFixed(4)}<br>Lon: ${parseFloat(lon).toFixed(4)}<br><small>${distrito}, Andahuaylas</small>`
-  );
-}
-
-function obtenerMiUbicacion() {
-  if (!navigator.geolocation) {
-    alert('Tu navegador no soporta el servicio de geolocalización.');
-    return;
-  }
-
-  const overlay = document.getElementById('map-loading');
-  if (overlay) overlay.classList.add('visible');
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      if (overlay) overlay.classList.remove('visible');
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-
-      document.getElementById('in-lat').value = lat.toFixed(4);
-      document.getElementById('in-lon').value = lon.toFixed(4);
-
-      updateMarker(lat, lon);
-      map.setView([lat, lon], 14);
-
-      marker.setPopupContent(
-        `<b>🎯 Tu ubicación detectada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>Precisión GPS: ~${Math.round(pos.coords.accuracy)} m</small>`
-      ).openPopup();
-    },
-    (err) => {
-      if (overlay) overlay.classList.remove('visible');
-      let msg = 'No se pudo obtener tu ubicación actual.';
-      if (err.code === 1) {
-        msg = 'Permiso de ubicación denegado. Activa los permisos de geolocalización en tu navegador.';
-      } else if (err.code === 2) {
-        msg = 'Posición GPS no disponible en este dispositivo.';
-      } else if (err.code === 3) {
-        msg = 'Tiempo de espera agotado al consultar la ubicación.';
-      }
-      alert(msg);
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-  );
-}
-
-// ── CHART ─────────────────────────────────────────────
-function initChart(period='1a') {
-  const ctx = document.getElementById('clima-chart').getContext('2d');
-  const d = CLIMATE_DATA[period];
-
-  if (climaChart) climaChart.destroy();
-
-  climaChart = new Chart(ctx, {
-    data: {
-      labels: d.labels,
-      datasets: [
-        {
-          type: 'line',
-          label: 'Temperatura (°C)',
-          data: d.temp,
-          borderColor: '#00d4ff',
-          backgroundColor: 'rgba(0,212,255,0.08)',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#00d4ff',
-          tension: 0.4,
-          fill: true,
-          yAxisID: 'y'
-        },
-        {
-          type: 'bar',
-          label: 'Precipitación (mm)',
-          data: d.prec,
-          backgroundColor: 'rgba(0,255,136,0.25)',
-          borderColor: '#00ff88',
-          borderWidth: 1,
-          borderRadius: 2,
-          yAxisID: 'y2'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 500 },
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          labels: { color: '#94a3b8', font: { size: 10, family: 'JetBrains Mono' }, boxWidth: 12, padding: 12 }
-        },
-        tooltip: {
-          backgroundColor: '#111827',
-          borderColor: 'rgba(0,212,255,0.3)',
-          borderWidth: 1,
-          titleColor: '#e2e8f0',
-          bodyColor: '#94a3b8',
-          titleFont: { family: 'JetBrains Mono', size: 11 },
-          bodyFont: { family: 'JetBrains Mono', size: 11 }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(255,255,255,0.03)' },
-          ticks: { color: '#475569', font: { size: 10, family: 'JetBrains Mono' } }
-        },
-        y: {
-          type: 'linear', position: 'left',
-          grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { color: '#00d4ff', font: { size: 10, family: 'JetBrains Mono' } },
-          title: { display: true, text: '°C', color: '#00d4ff', font: { size: 10 } }
-        },
-        y2: {
-          type: 'linear', position: 'right',
-          grid: { drawOnChartArea: false },
-          ticks: { color: '#00ff88', font: { size: 10, family: 'JetBrains Mono' } },
-          title: { display: true, text: 'mm', color: '#00ff88', font: { size: 10 } }
-        }
-      }
-    }
-  });
-}
-
-function setPeriod(p, btn) {
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  initChart(p);
-}
-
-// ── ROTACIONES ────────────────────────────────────────
-function getWeights() {
-  const sliders = ['sv-agua','sv-suelo','sv-prod','sv-costo','sv-riesgo'];
-  const vals = sliders.map(id => parseInt(document.getElementById(id).textContent));
-  const total = vals.reduce((a,b)=>a+b, 0) || 1;
-  return vals.map(v => v / total);
-}
-
-function computeWeightedScore(scores, weights) {
-  const keys = ['agua','suelo','prod','costo','riesgo'];
-  return Math.round(keys.reduce((acc, k, i) => acc + scores[k] * weights[i], 0));
-}
-
-function renderRotaciones() {
-  const weights = getWeights();
-  const container = document.getElementById('rotaciones-container');
-
-  // Sort by weighted score
-  const sorted = [...ROTACIONES_DATA].map(r => ({
-    ...r,
-    wscore: computeWeightedScore(r.scores, weights)
-  })).sort((a,b) => b.wscore - a.wscore);
-
-  container.innerHTML = sorted.map((r, idx) => {
-    const pct = r.wscore;
-    const barColor = pct >= 70 ? '#00d4ff' : pct >= 50 ? '#f59e0b' : '#ef4444';
-    const noteHtml = r.notas.map(n => {
-      const icon = n.type==='ok' ? '✅' : n.type==='warn' ? '⚠️' : '❌';
-      const color = n.type==='ok' ? '#00ff88' : n.type==='warn' ? '#f59e0b' : '#ef4444';
-      return `<div class="rot-note" style="color:${color}">${icon} <span style="color:var(--text-secondary)">${n.text}</span></div>`;
-    }).join('');
-
-    const critHtml = [
-      {icon:'💧',k:'agua'},{icon:'🌱',k:'suelo'},{icon:'📈',k:'prod'},{icon:'💰',k:'costo'},{icon:'⛈️',k:'riesgo'}
-    ].map(c => `<div class="crit-pill">${c.icon} ${r.scores[c.k]}</div>`).join('');
-
-    const bestBadge = idx===0 ? '<span class="best-badge">⭐ Mejor opción</span>' : '';
-
-    return `
-      <div class="rotation-card ${r.class}" style="animation: fadeIn 0.4s ease ${idx*0.1}s both">
-        <div class="rot-header">
-          <div>
-            <div class="rot-name">${r.nombre}${bestBadge}</div>
-            <div class="rot-sequence">${r.secuencia}</div>
-          </div>
-          <div class="rot-score-label" style="color:${barColor}">${pct}<small>/100</small></div>
-        </div>
-        <div class="score-bar-wrap">
-          <div class="score-bar" style="width:${pct}%;background:${barColor}"></div>
-        </div>
-        <div class="crit-row">${critHtml}</div>
-        <div class="rot-notes">${noteHtml}</div>
-      </div>`;
-  }).join('');
-}
-
-// ── ACTIONS ───────────────────────────────────────────
-function consultarClima() {
-  const lat = parseFloat(document.getElementById('in-lat').value);
-  const lon = parseFloat(document.getElementById('in-lon').value);
-
-  if (isNaN(lat) || isNaN(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-    alert('Por favor ingrese coordenadas válidas.\nLatitud: -90 a 90\nLongitud: -180 a 180');
-    return;
-  }
-
-  const overlay = document.getElementById('map-loading');
-  overlay.classList.add('visible');
-
-  setTimeout(() => {
-    updateMarker(lat, lon);
-    // Slight variation in demo data based on coordinates (simulated)
-    const latOffset = (lat - DEFAULT_LAT) * 0.6;
-    document.getElementById('cc-temp').textContent   = (14.2 - latOffset * 0.5).toFixed(1);
-    document.getElementById('cc-prec').textContent   = Math.round(723 + latOffset * 10);
-    document.getElementById('cc-viento').textContent = (3.1 + latOffset * 0.1).toFixed(1);
-    document.getElementById('cc-rad').textContent    = (4.8 + latOffset * 0.05).toFixed(1);
-    overlay.classList.remove('visible');
-  }, 1200);
-}
-
-function guardarFicha() {
-  const btn = event.target;
-  const orig = btn.textContent;
-  btn.textContent = '✅ Guardado';
-  btn.disabled = true;
-  setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
-}
-
-function compararRotaciones() {
-  const btn = document.getElementById('btn-comparar');
-  btn.disabled = true;
-  btn.textContent = '⏳ Calculando…';
-  setTimeout(() => {
-    renderRotaciones();
-    btn.disabled = false;
-    btn.textContent = '🔄 Comparar Rotaciones';
-    document.getElementById('card-resultados').scrollIntoView({ behavior:'smooth', block:'nearest' });
-  }, 700);
-}
-
-function toggleCrop(el) { el.classList.toggle('selected'); }
-
-function updateSlider(input, valId) {
-  document.getElementById(valId).textContent = input.value;
-}
-
-// ── INPUT LISTENERS ───────────────────────────────────
-document.getElementById('in-lat').addEventListener('change', () => {
-  const lat = parseFloat(document.getElementById('in-lat').value);
-  const lon = parseFloat(document.getElementById('in-lon').value);
-  if (!isNaN(lat) && !isNaN(lon)) updateMarker(lat, lon);
-});
-document.getElementById('in-lon').addEventListener('change', () => {
-  const lat = parseFloat(document.getElementById('in-lat').value);
-  const lon = parseFloat(document.getElementById('in-lon').value);
-  if (!isNaN(lat) && !isNaN(lon)) updateMarker(lat, lon);
-});
-
-// ── INIT ──────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  initMap();
-  initChart('1a');
-  renderRotaciones();
-});
-</script>
+<script type="module" src="js/main.js"></script>
 
 </body>
 </html>

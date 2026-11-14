@@ -1,0 +1,84 @@
+{
+  "climate": {
+    "source": "demo",
+    "summary": { "temp": 14.2, "prec": 723, "viento": 3.1, "rad": 4.8 },
+    "series": {
+      "1a": {
+        "temp": [13.1, 13.4, 13.8, 13.2, 12.4, 11.6, 11.2, 11.8, 12.6, 13.4, 13.9, 13.5],
+        "prec": [112, 98, 86, 42, 18, 8, 6, 12, 32, 68, 95, 108],
+        "labels": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+      },
+      "6m": {
+        "temp": [11.6, 11.2, 11.8, 12.6, 13.4, 13.9],
+        "prec": [8, 6, 12, 32, 68, 95],
+        "labels": ["Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
+      },
+      "2a": {
+        "temp": [13.0, 13.3, 13.7, 13.1, 12.3, 11.5, 11.1, 11.7, 12.5, 13.3, 13.8, 13.4, 13.1, 13.4, 13.8, 13.2, 12.4, 11.6, 11.2, 11.8, 12.6, 13.4, 13.9, 13.5],
+        "prec": [115, 100, 88, 45, 20, 9, 7, 13, 34, 70, 97, 110, 112, 98, 86, 42, 18, 8, 6, 12, 32, 68, 95, 108],
+        "labels": ["E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D", "E", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
+      }
+    }
+  },
+  "rotations": [
+    {
+      "id": "A",
+      "nombre": "Rotación A",
+      "secuencia": "Papa → Quinua → Haba → Descanso",
+      "scores": { "agua": 85, "suelo": 90, "prod": 78, "costo": 70, "riesgo": 85 },
+      "notas": [
+        { "type": "ok", "text": "Leguminosa (Haba) aporta nitrógeno al suelo" },
+        { "type": "ok", "text": "Diversidad de familias reduce presión fitosanitaria" },
+        { "type": "warn", "text": "Papa requiere control preventivo de plagas y enfermedades" }
+      ],
+      "class": "best",
+      "best": true
+    },
+    {
+      "id": "B",
+      "nombre": "Rotación B",
+      "secuencia": "Maíz → Papa → Avena → Haba",
+      "scores": { "agua": 60, "suelo": 80, "prod": 85, "costo": 75, "riesgo": 70 },
+      "notas": [
+        { "type": "ok", "text": "Alta productividad con ciclos complementarios" },
+        { "type": "warn", "text": "Mayor demanda hídrica en verano (Maíz)" },
+        { "type": "warn", "text": "Avena como cultivo de cobertura mejora suelo" }
+      ],
+      "class": "mid",
+      "best": false
+    },
+    {
+      "id": "C",
+      "nombre": "Rotación C — Riesgo alto",
+      "secuencia": "Papa → Maíz → Papa (riesgo monocultivo)",
+      "scores": { "agua": 55, "suelo": 30, "prod": 70, "costo": 80, "riesgo": 40 },
+      "notas": [
+        { "type": "bad", "text": "Repetición de Papa: alto riesgo de rancha y nematodos" },
+        { "type": "bad", "text": "Monocultivo degrada materia orgánica del suelo" },
+        { "type": "warn", "text": "Mayor costo fitosanitario a mediano plazo" }
+      ],
+      "class": "low",
+      "best": false
+    }
+  ],
+  "alerts": [
+    {
+      "type": "amber",
+      "icon": "⚠️",
+      "title": "Déficit hídrico estacional",
+      "text": "Precipitación abr–ago por debajo de 20 mm/mes. Considerar riego suplementario o cultivos resistentes a sequía."
+    },
+    {
+      "type": "info",
+      "icon": "ℹ️",
+      "title": "Datos de suelo no verificados",
+      "text": "Textura y pH marcados como \"estimados\". Validar con análisis de laboratorio local antes de tomar decisiones."
+    },
+    {
+      "type": "info",
+      "icon": "ℹ️",
+      "title": "Resultados orientativos",
+      "text": "Las puntuaciones son indicativas y se basan en reglas agronómicas simplificadas. Consulte a un técnico agrónomo certificado."
+    }
+  ]
+}

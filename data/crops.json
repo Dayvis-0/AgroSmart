@@ -1,0 +1,56 @@
+[
+  {
+    "id": "papa",
+    "icon": "🥔",
+    "name": "Papa",
+    "family": "Solanaceae",
+    "cycle": "90–120 días",
+    "waterDemand": "media",
+    "soilNote": "Prefiere suelos francos, bien drenados y pH 5.5–6.5"
+  },
+  {
+    "id": "maiz",
+    "icon": "🌽",
+    "name": "Maíz",
+    "family": "Poaceae",
+    "cycle": "120–180 días",
+    "waterDemand": "alta",
+    "soilNote": "Requiere suelos profundos y alta disponibilidad de agua en verano"
+  },
+  {
+    "id": "quinua",
+    "icon": "🌿",
+    "name": "Quinua",
+    "family": "Amaranthaceae",
+    "cycle": "150–180 días",
+    "waterDemand": "baja",
+    "soilNote": "Tolera suelos pobres y sequía; sensible al exceso de humedad"
+  },
+  {
+    "id": "haba",
+    "icon": "🫘",
+    "name": "Haba",
+    "family": "Fabaceae",
+    "cycle": "120–150 días",
+    "waterDemand": "media",
+    "soilNote": "Leguminosa que fija nitrógeno; prefiere suelos francos y frescos"
+  },
+  {
+    "id": "avena",
+    "icon": "🌾",
+    "name": "Avena",
+    "family": "Poaceae",
+    "cycle": "100–130 días",
+    "waterDemand": "media",
+    "soilNote": "Cultivo de cobertura que protege el suelo entre campañas"
+  },
+  {
+    "id": "cebolla",
+    "icon": "🧅",
+    "name": "Cebolla",
+    "family": "Amaryllidaceae",
+    "cycle": "120–150 días",
+    "waterDemand": "alta",
+    "soilNote": "Exige riego frecuente y suelos sueltos con buen drenaje"
+  }
+]

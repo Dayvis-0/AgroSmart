@@ -1,0 +1,22 @@
+{
+  "defaultSoil": {
+    "texture": "franca",
+    "ph": 6.2,
+    "organicMatter": "media",
+    "drainage": "moderado",
+    "water": "lluvia"
+  },
+  "demoParcel": {
+    "lat": -13.6539,
+    "lon": -73.3875,
+    "district": "Andahuaylas",
+    "community": "",
+    "soil": {
+      "texture": "franca",
+      "ph": 6.2,
+      "organicMatter": "media",
+      "drainage": "moderado",
+      "water": "lluvia"
+    }
+  }
+}
