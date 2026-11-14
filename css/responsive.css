@@ -1,0 +1,16 @@
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .main-grid {
+      grid-template-columns: 1fr;
+      height: auto;
+      overflow: visible;
+    }
+    .col { overflow-y: visible; border-right: none; border-bottom: 1px solid var(--border-subtle); }
+    .col:last-child { border-bottom: none; }
+    .topbar-center { display: none; }
+  }
+  @media (max-width: 540px) {
+    .topbar-status { gap: 8px; }
+    .status-item .si-label { display: none; }
+    .climate-grid { grid-template-columns: 1fr 1fr; }
+  }
