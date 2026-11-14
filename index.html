@@ -88,62 +88,97 @@
     <div class="card">
       <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
         <span>🏔️ Ficha del Suelo</span>
-        <span class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Ejemplo Demostrativo</span>
-      </div>
-      <p style="font-size: 10px; color: var(--text-secondary); margin: -4px 0 10px 0; line-height: 1.4;">
-        💡 Valores referenciales precargados de Andahuaylas para la demostración. No necesitas ingresar datos manuales.
-      </p>
-
-      <div class="field-label-row">
-        <label>Textura</label>
-        <span class="source-badge badge-informado">informado</span>
-      </div>
-      <select id="sel-textura">
-        <option value="franca" selected>Franca</option>
-        <option value="arenosa">Arenosa</option>
-        <option value="limosa">Limosa</option>
-        <option value="arcillosa">Arcillosa</option>
-        <option value="franco-arcillosa">Franco-arcillosa</option>
-      </select>
-
-      <div class="field-label-row">
-        <label>pH del suelo</label>
-        <span class="source-badge badge-estimado">estimado</span>
-      </div>
-      <input type="number" id="in-ph" value="6.2" step="0.1" min="4.0" max="8.5" />
-
-      <div class="field-label-row">
-        <label>Materia Orgánica</label>
-        <span class="source-badge badge-desconocido">desconocido</span>
-      </div>
-      <select id="sel-mo">
-        <option value="alta">Alta (&gt;4%)</option>
-        <option value="media" selected>Media (2–4%)</option>
-        <option value="baja">Baja (&lt;2%)</option>
-        <option value="desconocida">Desconocida</option>
-      </select>
-
-      <div class="field-label-row">
-        <label>Drenaje</label>
-        <span class="source-badge badge-informado">informado</span>
-      </div>
-      <select id="sel-drenaje">
-        <option value="bueno">Bueno</option>
-        <option value="moderado" selected>Moderado</option>
-        <option value="lento">Lento</option>
-        <option value="muy-lento">Muy lento</option>
-      </select>
-
-      <div class="field-label-row" style="margin-top:10px">
-        <label style="margin:0">Disponibilidad de Agua</label>
-      </div>
-      <div class="radio-group" style="margin-top:6px">
-        <label><input type="radio" name="agua" value="riego" /><span>💧 Riego</span></label>
-        <label><input type="radio" name="agua" value="lluvia" checked /><span>🌧️ Secano</span></label>
-        <label><input type="radio" name="agua" value="mixto" /><span>🔄 Mixto</span></label>
+        <span id="soil-mode-badge" class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Modo Agricultor</span>
       </div>
 
-      <button class="btn btn-secondary" id="btn-guardar">💾 Guardar Ficha</button>
+      <!-- Switch de Perfil -->
+      <div style="display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 3px; margin: 8px 0 12px 0; gap: 4px;">
+        <button type="button" id="tab-productor" onclick="setSoilProfile('productor')" style="flex: 1; padding: 6px 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; border-radius: var(--radius-sm); border: none; background: rgba(0,212,255,0.15); color: var(--accent-cyan); cursor: pointer; transition: all 0.2s; font-weight: 600;">
+          👨‍🌾 Agricultor
+        </button>
+        <button type="button" id="tab-agronomo" onclick="setSoilProfile('agronomo')" style="flex: 1; padding: 6px 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+          🔬 Agrónomo
+        </button>
+      </div>
+
+      <!-- VISTA 1: MODO AGRICULTOR (Sencillo / Guiado) -->
+      <div id="view-productor">
+        <label>¿Cómo es la tierra de tu chacra?</label>
+        <select id="sel-tipo-simple" onchange="applySimpleSoil(this.value)">
+          <option value="negra" selected>🌱 Tierra negra / suelta y fértil (Típico Franco)</option>
+          <option value="arenosa">🏜️ Tierra arenosa / cascajosa (Seca rápido)</option>
+          <option value="gredosa">🧱 Tierra pesada / gredosa (Retiene agua)</option>
+        </select>
+
+        <label style="margin-top: 10px;">¿De dónde recibe agua tu cultivo?</label>
+        <div class="radio-group" style="margin-top: 6px;">
+          <label><input type="radio" name="agua-simple" value="riego" onchange="syncWater(this.value)" /><span>💧 Riego por canal</span></label>
+          <label><input type="radio" name="agua-simple" value="lluvia" checked onchange="syncWater(this.value)" /><span>🌧️ Solo lluvia (Secano)</span></label>
+          <label><input type="radio" name="agua-simple" value="mixto" onchange="syncWater(this.value)" /><span>🔄 Mixto</span></label>
+        </div>
+
+        <div style="margin-top: 12px; padding: 8px 10px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: var(--radius-sm); font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+          ✅ <strong style="color: var(--accent-green);">Estimación automática activa:</strong> Suelo típico de Andahuaylas precargado (pH ~6.2, drenaje moderado). No requieres análisis de laboratorio.
+        </div>
+      </div>
+
+      <!-- VISTA 2: MODO AGRÓNOMO (Ficha Técnica Avanzada) -->
+      <div id="view-agronomo" style="display: none;">
+        <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 8px;">
+          🔬 Ingrese los valores específicos de su análisis de suelo de laboratorio:
+        </p>
+
+        <div class="field-label-row">
+          <label>Textura de suelo</label>
+          <span class="source-badge badge-informado">informado</span>
+        </div>
+        <select id="sel-textura">
+          <option value="franca" selected>Franca</option>
+          <option value="arenosa">Arenosa</option>
+          <option value="limosa">Limosa</option>
+          <option value="arcillosa">Arcillosa</option>
+          <option value="franco-arcillosa">Franco-arcillosa</option>
+        </select>
+
+        <div class="field-label-row">
+          <label>pH del suelo</label>
+          <span class="source-badge badge-estimado">estimado</span>
+        </div>
+        <input type="number" id="in-ph" value="6.2" step="0.1" min="4.0" max="8.5" />
+
+        <div class="field-label-row">
+          <label>Materia Orgánica</label>
+          <span class="source-badge badge-desconocido">desconocido</span>
+        </div>
+        <select id="sel-mo">
+          <option value="alta">Alta (&gt;4%)</option>
+          <option value="media" selected>Media (2–4%)</option>
+          <option value="baja">Baja (&lt;2%)</option>
+          <option value="desconocida">Desconocida</option>
+        </select>
+
+        <div class="field-label-row">
+          <label>Drenaje</label>
+          <span class="source-badge badge-informado">informado</span>
+        </div>
+        <select id="sel-drenaje">
+          <option value="bueno">Bueno</option>
+          <option value="moderado" selected>Moderado</option>
+          <option value="lento">Lento</option>
+          <option value="muy-lento">Muy lento</option>
+        </select>
+
+        <div class="field-label-row" style="margin-top:10px">
+          <label style="margin:0">Disponibilidad de Agua</label>
+        </div>
+        <div class="radio-group" style="margin-top:6px">
+          <label><input type="radio" name="agua" value="riego" onchange="syncWaterSimple(this.value)" /><span>💧 Riego</span></label>
+          <label><input type="radio" name="agua" value="lluvia" checked onchange="syncWaterSimple(this.value)" /><span>🌧️ Secano</span></label>
+          <label><input type="radio" name="agua" value="mixto" onchange="syncWaterSimple(this.value)" /><span>🔄 Mixto</span></label>
+        </div>
+
+        <button class="btn btn-secondary" id="btn-guardar" style="margin-top: 12px;">💾 Guardar Ficha Técnica</button>
+      </div>
     </div>
 
     <!-- Estado de Conexión -->
@@ -283,6 +318,83 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script type="module" src="js/main.js"></script>
+
+<script>
+  window.setSoilProfile = function(profile) {
+    const isAgronomo = profile === 'agronomo';
+    const tabProd = document.getElementById('tab-productor');
+    const tabAgro = document.getElementById('tab-agronomo');
+    const viewProd = document.getElementById('view-productor');
+    const viewAgro = document.getElementById('view-agronomo');
+    const badge = document.getElementById('soil-mode-badge');
+
+    if (isAgronomo) {
+      tabAgro.style.background = 'rgba(0,212,255,0.15)';
+      tabAgro.style.color = 'var(--accent-cyan)';
+      tabAgro.style.fontWeight = '600';
+      tabProd.style.background = 'transparent';
+      tabProd.style.color = 'var(--text-secondary)';
+      tabProd.style.fontWeight = 'normal';
+      viewProd.style.display = 'none';
+      viewAgro.style.display = 'block';
+      if (badge) {
+        badge.textContent = 'Ficha Técnica';
+        badge.className = 'source-badge badge-medido';
+      }
+    } else {
+      tabProd.style.background = 'rgba(0,212,255,0.15)';
+      tabProd.style.color = 'var(--accent-cyan)';
+      tabProd.style.fontWeight = '600';
+      tabAgro.style.background = 'transparent';
+      tabAgro.style.color = 'var(--text-secondary)';
+      tabAgro.style.fontWeight = 'normal';
+      viewProd.style.display = 'block';
+      viewAgro.style.display = 'none';
+      if (badge) {
+        badge.textContent = 'Modo Agricultor';
+        badge.className = 'source-badge badge-estimado';
+      }
+    }
+  };
+
+  window.applySimpleSoil = function(type) {
+    const selTextura = document.getElementById('sel-textura');
+    const inPh = document.getElementById('in-ph');
+    const selMo = document.getElementById('sel-mo');
+    const selDrenaje = document.getElementById('sel-drenaje');
+
+    if (type === 'negra') {
+      if (selTextura) selTextura.value = 'franca';
+      if (inPh) inPh.value = 6.2;
+      if (selMo) selMo.value = 'media';
+      if (selDrenaje) selDrenaje.value = 'moderado';
+    } else if (type === 'arenosa') {
+      if (selTextura) selTextura.value = 'arenosa';
+      if (inPh) inPh.value = 6.8;
+      if (selMo) selMo.value = 'baja';
+      if (selDrenaje) selDrenaje.value = 'bueno';
+    } else if (type === 'gredosa') {
+      if (selTextura) selTextura.value = 'arcillosa';
+      if (inPh) inPh.value = 5.8;
+      if (selMo) selMo.value = 'alta';
+      if (selDrenaje) selDrenaje.value = 'lento';
+    }
+  };
+
+  window.syncWater = function(val) {
+    const radios = document.querySelectorAll('input[name="agua"]');
+    radios.forEach(r => {
+      if (r.value === val) r.checked = true;
+    });
+  };
+
+  window.syncWaterSimple = function(val) {
+    const radios = document.querySelectorAll('input[name="agua-simple"]');
+    radios.forEach(r => {
+      if (r.value === val) r.checked = true;
+    });
+  };
+</script>
 
 </body>
 </html>
