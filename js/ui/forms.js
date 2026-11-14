@@ -158,20 +158,40 @@ function setupPeriodButtons(chart) {
 }
 
 export function initForms({ chart, onCompare }) {
-  byId('in-lat').addEventListener('change', syncMarkerFromInputs);
-  byId('in-lon').addEventListener('change', syncMarkerFromInputs);
-  byId('sel-distrito').addEventListener('change', applyDistrictPreset);
-
+  const inLat = byId('in-lat');
+  const inLon = byId('in-lon');
+  const selDistrito = byId('sel-distrito');
   const toggleBtn = byId('btn-toggle-filter');
   const closeBtn = byId('btn-close-filter');
   const panel = byId('parcel-filter-panel');
-  if (toggleBtn) toggleBtn.addEventListener('click', toggleParcelPanel);
-  if (closeBtn) closeBtn.addEventListener('click', () => setParcelPanelOpen(false));
+  const btnLocate = byId('btn-locate');
+  const btnConsultar = byId('btn-consultar');
+  const btnGuardar = byId('btn-guardar');
+  const btnComparar = byId('btn-comparar');
+
+  if (inLat) inLat.addEventListener('change', syncMarkerFromInputs);
+  if (inLon) inLon.addEventListener('change', syncMarkerFromInputs);
+  if (selDistrito) selDistrito.addEventListener('change', applyDistrictPreset);
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      toggleParcelPanel();
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setParcelPanelOpen(false);
+    });
+  }
 
   document.addEventListener('click', (event) => {
     if (!panel || !panel.classList.contains('is-open')) return;
     if (panel.contains(event.target)) return;
-    if (toggleBtn && toggleBtn.contains(event.target)) return;
+    if (toggleBtn && (event.target === toggleBtn || toggleBtn.contains(event.target))) return;
     setParcelPanelOpen(false);
   });
 
@@ -182,11 +202,12 @@ export function initForms({ chart, onCompare }) {
     }
   });
 
-  byId('btn-locate').addEventListener('click', handleLocate);
+  if (btnLocate) btnLocate.addEventListener('click', handleLocate);
   document.addEventListener(LOCATE_EVENT, handleLocate);
-  byId('btn-consultar').addEventListener('click', handleClimateQuery);
-  byId('btn-guardar').addEventListener('click', handleSaveSoil);
-  byId('btn-comparar').addEventListener('click', (event) => handleCompare(event, onCompare));
+  if (btnConsultar) btnConsultar.addEventListener('click', handleClimateQuery);
+  if (btnGuardar) btnGuardar.addEventListener('click', handleSaveSoil);
+  if (btnComparar) btnComparar.addEventListener('click', (event) => handleCompare(event, onCompare));
+
   setupCropTags();
   setupSliders();
   setupPeriodButtons(chart);
