@@ -5,7 +5,7 @@ Single-page agricultural decision-support prototype for parcels in Andahuaylas (
 ## Project structure
 
 ```text
-Proyecto/AgroSmart/
+.
 ├── index.html                 # Markup and module entry point
 ├── css/
 │   ├── styles.css             # Design tokens, base styles, keyframes
@@ -32,8 +32,8 @@ Proyecto/AgroSmart/
 │       ├── dashboard.js
 │       ├── forms.js
 │       └── notifications.js
-└── tests/
-    └── rotation-engine.test.js
+└── odd/
+    └── ...                    # Project planning and task docs
 ```
 
 ## Run locally
@@ -41,7 +41,6 @@ Proyecto/AgroSmart/
 ES modules and JSON loading require an HTTP server. Opening `index.html` directly with `file://` will not work correctly.
 
 ```bash
-cd Proyecto/AgroSmart
 python3 -m http.server 8000
 ```
 
@@ -59,16 +58,3 @@ Press **Consultar Clima** to request real values from [NASA POWER](https://power
 ## Rotation engine
 
 Rotation scores are weighted averages of the five criteria priorities (1–5). For the default priorities `[4, 3, 5, 3, 4]` the demo rotations score **82 (A)**, **74 (B)** and **56 (C)**. Results are indicative and based on simplified agronomic rules.
-
-## Tests
-
-```bash
-cd Proyecto/AgroSmart
-node --test tests/rotation-engine.test.js
-```
-
-## Notes and limitations
-
-- Map tiles are loaded from MapTiler (client key embedded in `js/config.js`).
-- NASA GIBS layers, Web Speech, persistence and full agronomic validation are out of scope for this prototype version.
-- Do not treat scores or climate estimates as a substitute for field measurements or professional agronomic advice.
