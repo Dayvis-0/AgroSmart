@@ -8,9 +8,24 @@
     .col { overflow-y: visible; border-right: none; border-bottom: 1px solid var(--border-subtle); }
     .col:last-child { border-bottom: none; }
     .topbar-center { display: none; }
+
+    .parcel-filter-panel {
+      top: 52px;
+      left: 8px;
+      width: calc(100% - 16px);
+      max-height: calc(100% - 60px);
+    }
   }
   @media (max-width: 540px) {
     .topbar-status { gap: 8px; }
     .status-item .si-label { display: none; }
     .climate-grid { grid-template-columns: 1fr 1fr; }
+
+    .parcel-filter-actions {
+      flex-direction: column;
+    }
+
+    .map-card-title {
+      align-items: flex-start;
+    }
   }

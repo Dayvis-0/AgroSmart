@@ -10,6 +10,17 @@ import { alertMessage, busyButton, hideOverlay, showOverlay } from './notificati
 const byId = (id) => document.getElementById(id);
 const selectedDistrict = () => byId('sel-distrito').value;
 
+const DISTRICT_COORDS = {
+  Andahuaylas: { lat: -13.6556, lon: -73.3872 },
+  Talavera: { lat: -13.6533, lon: -73.4291 },
+  'San Jerónimo': { lat: -13.651, lon: -73.3647 },
+  Pacucha: { lat: -13.608, lon: -73.3439 },
+  Kishuará: { lat: -13.6914, lon: -73.1578 },
+  Turpo: { lat: -13.7869, lon: -73.4722 },
+  Kaquiabamba: { lat: -13.6331, lon: -73.4981 },
+  Andarapa: { lat: -13.5278, lon: -73.3653 }
+};
+
 function readCoordinates() {
   return { lat: parseFloat(byId('in-lat').value), lon: parseFloat(byId('in-lon').value) };
 }
@@ -22,6 +33,34 @@ function syncMarkerFromInputs() {
   const { lat, lon } = readCoordinates();
   if (isNaN(lat) || isNaN(lon)) return;
   setMarker(lat, lon, { district: selectedDistrict() });
+}
+
+function setParcelPanelOpen(open) {
+  const panel = byId('parcel-filter-panel');
+  const toggle = byId('btn-toggle-filter');
+  if (!panel || !toggle) return;
+  panel.classList.toggle('is-open', open);
+  panel.setAttribute('aria-hidden', String(!open));
+  toggle.setAttribute('aria-expanded', String(open));
+  if (open) {
+    const first = byId('sel-distrito');
+    if (first) first.focus({ preventScroll: true });
+  }
+}
+
+function toggleParcelPanel() {
+  const panel = byId('parcel-filter-panel');
+  if (!panel) return;
+  setParcelPanelOpen(!panel.classList.contains('is-open'));
+}
+
+function applyDistrictPreset() {
+  const district = selectedDistrict();
+  const preset = DISTRICT_COORDS[district];
+  if (!preset) return;
+  byId('in-lat').value = preset.lat.toFixed(4);
+  byId('in-lon').value = preset.lon.toFixed(4);
+  setMarker(preset.lat, preset.lon, { district, zoom: 12 });
 }
 
 async function handleLocate() {
@@ -121,6 +160,28 @@ function setupPeriodButtons(chart) {
 export function initForms({ chart, onCompare }) {
   byId('in-lat').addEventListener('change', syncMarkerFromInputs);
   byId('in-lon').addEventListener('change', syncMarkerFromInputs);
+  byId('sel-distrito').addEventListener('change', applyDistrictPreset);
+
+  const toggleBtn = byId('btn-toggle-filter');
+  const closeBtn = byId('btn-close-filter');
+  const panel = byId('parcel-filter-panel');
+  if (toggleBtn) toggleBtn.addEventListener('click', toggleParcelPanel);
+  if (closeBtn) closeBtn.addEventListener('click', () => setParcelPanelOpen(false));
+
+  document.addEventListener('click', (event) => {
+    if (!panel || !panel.classList.contains('is-open')) return;
+    if (panel.contains(event.target)) return;
+    if (toggleBtn && toggleBtn.contains(event.target)) return;
+    setParcelPanelOpen(false);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && panel && panel.classList.contains('is-open')) {
+      setParcelPanelOpen(false);
+      if (toggleBtn) toggleBtn.focus();
+    }
+  });
+
   byId('btn-locate').addEventListener('click', handleLocate);
   document.addEventListener(LOCATE_EVENT, handleLocate);
   byId('btn-consultar').addEventListener('click', handleClimateQuery);
