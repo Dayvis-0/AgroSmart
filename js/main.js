@@ -10,7 +10,9 @@ import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
 import { initMap, setMarker } from './map/map-controller.js';
 import { buildComparisonPdf, downloadPdf } from './reports/pdf-report.js';
+import { fetchElevation } from './api/elevation.js';
 import { fetchRegionalContext } from './api/regional-context.js';
+import { getSuitabilitySummary } from './agriculture/crop-suitability.js';
 import { getState, setState, subscribe, resetState, hasPersistedState } from './state.js';
 import { renderClimateCards, renderClimateStatus, renderRegionalContext, renderRotations, startClock } from './ui/dashboard.js';
 import { initForms, syncControlsFromState } from './ui/forms.js';
@@ -27,6 +29,7 @@ let defaultAlert = null;
 let currentPdfDoc = null;
 let requestClimate = null;
 let climateChart = null;
+let elevationRequestId = 0;
 
 function clearComparisonResults() {
   const cardResultados = byId('card-resultados');
@@ -41,6 +44,54 @@ function clearComparisonResults() {
   if (alertsContainer) alertsContainer.innerHTML = '';
   if (btnDescargar) btnDescargar.style.display = 'none';
   currentPdfDoc = null;
+}
+
+function coordsKey(lat, lon) {
+  const la = Number(lat);
+  const lo = Number(lon);
+  if (!Number.isFinite(la) || !Number.isFinite(lo)) return null;
+  return `${la.toFixed(4)},${lo.toFixed(4)}`;
+}
+
+function renderCropSuitabilityUI() {
+  const contextNode = byId('crop-suitability-context');
+  const grid = byId('crop-grid');
+  const state = getState();
+  if (contextNode) {
+    contextNode.textContent = getSuitabilitySummary(state.parcel);
+  }
+  if (grid && cropCatalog.length) {
+    renderCrops(grid, cropCatalog, { selectedIds: state.crops, parcel: state.parcel });
+  }
+}
+
+function updateParcelElevationForCoords(lat, lon, { force = false } = {}) {
+  const key = coordsKey(lat, lon);
+  const current = getState().parcel;
+  const currentKey = coordsKey(current.lat, current.lon);
+  if (!key || key !== currentKey) return;
+
+  const elevationKnown = typeof current.elevation === 'number' && Number.isFinite(current.elevation);
+  if (!force && elevationKnown) return;
+
+  const requestId = ++elevationRequestId;
+  fetchElevation({ lat, lon })
+    .then((elevation) => {
+      if (requestId !== elevationRequestId) return;
+      const latest = getState().parcel;
+      if (coordsKey(latest.lat, latest.lon) !== key) return;
+      if (typeof latest.elevation === 'number' && Number.isFinite(latest.elevation) && latest.elevation === elevation) {
+        return;
+      }
+      setState({ parcel: { ...latest, elevation } });
+    })
+    .catch(() => {
+      if (requestId !== elevationRequestId) return;
+      const latest = getState().parcel;
+      if (coordsKey(latest.lat, latest.lon) !== key) return;
+      if (latest.elevation == null) return;
+      setState({ parcel: { ...latest, elevation: null } });
+    });
 }
 
 function invalidateClimate() {
@@ -388,11 +439,13 @@ function handlePolygonComplete({ lat, lng, latlngs, ha }) {
       district,
       community,
       polygon: latlngs,
-      areaHa: ha
+      areaHa: ha,
+      elevation: null
     }
   });
 
   invalidateClimate();
+  updateParcelElevationForCoords(lat, lng, { force: true });
 }
 
 function handleMapPick(lat, lon) {
@@ -417,8 +470,9 @@ function handleMapPick(lat, lon) {
   }
 
   setMarker(lat, lon, { district, community, openPopup: true });
-  setState({ parcel: { ...getState().parcel, lat, lon, district, community } });
+  setState({ parcel: { ...getState().parcel, lat, lon, district, community, elevation: null } });
   invalidateClimate();
+  updateParcelElevationForCoords(lat, lon, { force: true });
 }
 
 async function bootstrap() {
@@ -483,11 +537,15 @@ async function bootstrap() {
   renderClimateStatus(climate.status || 'idle', climate);
   renderRegionalContext(regionalContext);
 
-  if (crops) renderCrops(byId('crop-grid'), crops, getState().crops);
+  renderCropSuitabilityUI();
 
   initMap({ onPick: handleMapPick, onPolygonComplete: handlePolygonComplete });
 
   subscribe((state, previous) => {
+    if (state.parcel !== previous.parcel) {
+      renderCropSuitabilityUI();
+    }
+
     if (state.climate !== previous.climate) {
       const { climate: next } = state;
       if (next.status === 'loading') {
@@ -552,17 +610,27 @@ async function bootstrap() {
 
   setupDownloadButtons();
   setupResetButton();
+  const handleLocationChange = () => {
+    invalidateClimate();
+    const { lat, lon } = getState().parcel;
+    updateParcelElevationForCoords(lat, lon, { force: true });
+  };
   const forms = initForms({
     chart: climateChart,
     crops: cropCatalog,
     onCompare: handleCompareRotations,
-    onLocationChange: invalidateClimate,
+    onLocationChange: handleLocationChange,
     onCropsChange: refreshComparisonIfVisible,
     onPrioritiesChange: refreshComparisonIfVisible,
     onCurrentRotationChange: refreshComparisonIfVisible
   });
   requestClimate = forms?.requestClimate ?? null;
   syncParcelInputs();
+
+  const initialParcel = getState().parcel;
+  if (typeof initialParcel.elevation !== 'number' || !Number.isFinite(initialParcel.elevation)) {
+    updateParcelElevationForCoords(initialParcel.lat, initialParcel.lon, { force: true });
+  }
 }
 
 bootstrap();

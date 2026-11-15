@@ -9,7 +9,10 @@
     "soilNote": "Prefiere suelos francos, bien drenados y pH 5.5–6.5",
     "tempMinC": 8,
     "tempMaxC": 20,
-    "waterNeedMmMonth": 90
+    "waterNeedMmMonth": 90,
+    "altitudeMinM": 2800,
+    "altitudeMaxM": 4200,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   },
   {
     "id": "maiz",
@@ -21,7 +24,10 @@
     "soilNote": "Requiere suelos profundos y alta disponibilidad de agua en verano",
     "tempMinC": 14,
     "tempMaxC": 28,
-    "waterNeedMmMonth": 120
+    "waterNeedMmMonth": 120,
+    "altitudeMinM": 2200,
+    "altitudeMaxM": 3500,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   },
   {
     "id": "quinua",
@@ -33,7 +39,10 @@
     "soilNote": "Tolera suelos pobres y sequía; sensible al exceso de humedad",
     "tempMinC": 4,
     "tempMaxC": 22,
-    "waterNeedMmMonth": 45
+    "waterNeedMmMonth": 45,
+    "altitudeMinM": 2500,
+    "altitudeMaxM": 4000,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   },
   {
     "id": "haba",
@@ -45,7 +54,10 @@
     "soilNote": "Leguminosa que fija nitrógeno; prefiere suelos francos y frescos",
     "tempMinC": 6,
     "tempMaxC": 22,
-    "waterNeedMmMonth": 70
+    "waterNeedMmMonth": 70,
+    "altitudeMinM": 2400,
+    "altitudeMaxM": 3800,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   },
   {
     "id": "avena",
@@ -57,7 +69,10 @@
     "soilNote": "Cultivo de cobertura que protege el suelo entre campañas",
     "tempMinC": 5,
     "tempMaxC": 20,
-    "waterNeedMmMonth": 65
+    "waterNeedMmMonth": 65,
+    "altitudeMinM": 2800,
+    "altitudeMaxM": 4000,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   },
   {
     "id": "cebolla",
@@ -69,6 +84,9 @@
     "soilNote": "Exige riego frecuente y suelos sueltos con buen drenaje",
     "tempMinC": 12,
     "tempMaxC": 24,
-    "waterNeedMmMonth": 110
+    "waterNeedMmMonth": 110,
+    "altitudeMinM": 2400,
+    "altitudeMaxM": 3500,
+    "zones": ["Andahuaylas", "Talavera", "San Jerónimo", "Pacucha", "Kishuará", "Turpo", "Kaquiabamba", "Andarapa"]
   }
 ]

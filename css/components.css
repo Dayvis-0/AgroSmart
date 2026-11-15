@@ -637,3 +637,76 @@
     margin-left: 8px;
     vertical-align: middle;
   }
+
+  /* ── CROP SUITABILITY (Paso 4) ── */
+  .crop-suitability-context {
+    margin: 0 0 10px 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.45;
+  }
+
+  .crop-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .crop-suitability-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .crop-suitability-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .crop-grid-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .crop-tag {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 140px;
+    max-width: 220px;
+    text-align: left;
+    line-height: 1.25;
+  }
+
+  .crop-tag-main { font-weight: 600; font-size: 12px; }
+  .crop-tag-badge {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    opacity: 0.95;
+  }
+  .crop-tag-reason {
+    font-size: 10px;
+    color: var(--text-secondary);
+    white-space: normal;
+  }
+
+  .crop-tag--recommended { border-color: rgba(0, 255, 136, 0.35); }
+  .crop-tag--recommended .crop-tag-badge { color: var(--accent-green); }
+  .crop-tag--possible { border-color: rgba(245, 158, 11, 0.35); }
+  .crop-tag--possible .crop-tag-badge { color: var(--accent-amber); }
+  .crop-tag--not_recommended { border-color: rgba(239, 68, 68, 0.35); }
+  .crop-tag--not_recommended .crop-tag-badge { color: var(--accent-red); }
+
+  .crop-tag.selected.crop-tag--recommended { background: rgba(0, 255, 136, 0.12); }
+  .crop-tag.selected.crop-tag--possible { background: rgba(245, 158, 11, 0.12); }
+  .crop-tag.selected.crop-tag--not_recommended { background: rgba(239, 68, 68, 0.12); }

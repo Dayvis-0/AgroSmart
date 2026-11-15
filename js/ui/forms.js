@@ -37,25 +37,35 @@ function coordinatesAreValid({ lat, lon }) {
   return !isNaN(lat) && !isNaN(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
-function syncParcelState() {
+function coordsEqual(a, b) {
+  return Number(a) === Number(b);
+}
+
+function syncParcelState({ resetElevationOnCoordChange = false } = {}) {
+  const prev = getState().parcel;
   const { lat, lon } = readCoordinates();
   const district = selectedDistrict();
   const community = selectedCommunity();
-  const parcel = { ...getState().parcel, district, community };
+  const parcel = { ...prev, district, community };
   if (!isNaN(lat)) parcel.lat = lat;
   if (!isNaN(lon)) parcel.lon = lon;
+  const coordsChanged = !coordsEqual(parcel.lat, prev.lat) || !coordsEqual(parcel.lon, prev.lon);
+  if (resetElevationOnCoordChange && coordsChanged) {
+    parcel.elevation = null;
+  }
   setState({ parcel });
-  return parcel;
+  return { parcel, coordsChanged };
 }
 
-function syncMarkerFromInputs({ invalidate = false, onLocationChange = null } = {}) {
+function syncMarkerFromInputs({ invalidate = false, onLocationChange = null, resetElevationOnCoordChange = false } = {}) {
   const { lat, lon } = readCoordinates();
   if (isNaN(lat) || isNaN(lon)) return;
   const district = selectedDistrict();
   const community = selectedCommunity();
-  syncParcelState();
+  const { coordsChanged } = syncParcelState({ resetElevationOnCoordChange: resetElevationOnCoordChange || invalidate });
   setMarker(lat, lon, { district, community });
   if (invalidate && typeof onLocationChange === 'function') onLocationChange();
+  return { coordsChanged };
 }
 
 function isInlineParcelPanel(panel) {
@@ -109,7 +119,7 @@ function applyDistrictPreset(onLocationChange) {
   const community = selectedCommunity();
   byId('in-lat').value = preset.lat.toFixed(4);
   byId('in-lon').value = preset.lon.toFixed(4);
-  syncParcelState();
+  syncParcelState({ resetElevationOnCoordChange: true });
   setMarker(preset.lat, preset.lon, { district, community, zoom: 12 });
   if (typeof onLocationChange === 'function') onLocationChange();
 }
@@ -121,7 +131,7 @@ async function handleLocate(onLocationChange) {
     hideOverlay('map-loading');
     byId('in-lat').value = lat.toFixed(4);
     byId('in-lon').value = lon.toFixed(4);
-    syncParcelState();
+    syncParcelState({ resetElevationOnCoordChange: true });
     const district = selectedDistrict();
     const community = selectedCommunity();
     const place = [community, district].filter((value) => value && String(value).trim()).join(', ');
@@ -170,7 +180,7 @@ async function handleSearchLocation(onLocationChange) {
 
     byId('in-lat').value = Number(lat).toFixed(4);
     byId('in-lon').value = Number(lon).toFixed(4);
-    syncParcelState();
+    syncParcelState({ resetElevationOnCoordChange: true });
     const place = [community, district].filter((value) => value && String(value).trim()).join(', ');
     setMarker(lat, lon, {
       district,
@@ -184,7 +194,7 @@ async function handleSearchLocation(onLocationChange) {
     if (preset) {
       byId('in-lat').value = preset.lat.toFixed(4);
       byId('in-lon').value = preset.lon.toFixed(4);
-      syncParcelState();
+      syncParcelState({ resetElevationOnCoordChange: true });
       setMarker(preset.lat, preset.lon, { district, community, zoom: 12, openPopup: true });
       if (typeof onLocationChange === 'function') onLocationChange();
       alertMessage('No pudimos ubicar la comunidad con exactitud. Te mostramos una ubicación aproximada del distrito para que puedas seguir.');
@@ -422,10 +432,10 @@ export function initForms({
   const btnGuardar = byId('btn-guardar');
   const btnComparar = byId('btn-comparar');
 
-  if (inLat) inLat.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
-  if (inLon) inLon.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
+  if (inLat) inLat.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange, resetElevationOnCoordChange: true }));
+  if (inLon) inLon.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange, resetElevationOnCoordChange: true }));
   if (inComunidad) {
-    inComunidad.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
+    inComunidad.addEventListener('change', () => syncMarkerFromInputs({ invalidate: false, onLocationChange: null }));
   }
   if (selDistrito) selDistrito.addEventListener('change', () => applyDistrictPreset(onLocationChange));
 
