@@ -1,6 +1,8 @@
 import { renderCrops } from './agriculture/crop-catalog.js';
 import { CRITERIA, normalizeWeights, rankRotations } from './agriculture/rotation-engine.js';
 import { buildCurrentRotation, normalizeRotation } from './agriculture/rotation-model.js';
+import { generateCandidateRotations } from './agriculture/rotation-generator.js';
+import { deriveRotationInsights } from './agriculture/rotation-insights.js';
 import { computeRotationScores } from './agriculture/scoring-engine.js';
 import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
@@ -14,7 +16,9 @@ import { initForms, syncControlsFromState } from './ui/forms.js';
 
 const byId = (id) => document.getElementById(id);
 
-let rotations = [];
+// Demo rotations kept only as labeled offline fallback data; normal comparison
+// uses generated candidates with computed scores and derived evidence/risks.
+let demoFallbackRotations = [];
 let cropCatalog = [];
 let baseAlerts = [];
 let defaultAlert = null;
@@ -95,84 +99,150 @@ function buildAlerts(waterDeficit) {
   return alerts;
 }
 
-function isClimateComputable(climate) {
-  if (!climate || (climate.status !== 'ready' && climate.status !== 'error')) return false;
-  if (!climate.series && !Array.isArray(climate.monthlyPrecMm)) return false;
+function hasUsableClimateData(climate) {
+  if (!climate) return false;
+  if (Array.isArray(climate.monthlyPrecMm) && climate.monthlyPrecMm.length) return true;
   const period = climate.series?.['1a'] || climate.series?.['6m'] || climate.series?.['2a'];
-  return Boolean(period?.prec?.length || period?.temp?.length || climate.summary);
+  return Boolean(
+    (period && (period.prec?.length || period.temp?.length)) || climate.summary
+  );
 }
 
-function shouldUseComputedScores(climate) {
-  // Live/computed path: compute from climate + soil + crops + priorities when
-  // usable climate context exists. Demo data is only a labeled fallback when
-  // no computable climate is available.
-  return isClimateComputable(climate);
+function shouldUseGeneratedComparison(climate) {
+  // Normal flow: generate candidates and compute/derive from available climate
+  // context (NASA or labeled demo fallback data). Static demo rotations are not
+  // used as candidates/scores/evidence in this path.
+  return hasUsableClimateData(climate);
 }
 
-function withComputedScores(rotation, context) {
-  if (!rotation || rotation.scores || !context) return rotation;
+function withComputedData(rotation, context) {
+  if (!rotation) return rotation;
   const scores = computeRotationScores({
     sequence: rotation.sequence || [],
     climate: context.climate,
     soil: context.soil,
     crops: context.crops
   });
-  return { ...rotation, scores };
+  const notas = deriveRotationInsights({
+    sequence: rotation.sequence || [],
+    scores,
+    climate: context.climate,
+    soil: context.soil,
+    crops: context.crops
+  });
+  return { ...rotation, scores, notas };
 }
 
 function getCurrentRotation(context) {
   const ids = getState().currentRotation;
   if (!Array.isArray(ids) || ids.length < 2) return null;
   const rotation = buildCurrentRotation(ids, { cropCatalog });
-  return context?.compute ? withComputedScores(rotation, context) : rotation;
+  return context ? withComputedData(rotation, context) : rotation;
 }
 
-function getApplicableRotations(context) {
-  const selected = new Set(getState().crops || []);
-  const base = rotations.filter(
+function getGeneratedRotations(context) {
+  const selectedIds = Array.isArray(getState().crops) ? getState().crops : [];
+  const selected = new Set(selectedIds);
+  if (selectedIds.length === 0) return [];
+
+  const currentIds = Array.isArray(getState().currentRotation) ? getState().currentRotation : null;
+  const currentValid = currentIds && currentIds.length >= 2 && currentIds.every((id) => selected.has(id));
+  const minSuggested = currentValid ? 3 : 3;
+
+  const candidates = generateCandidateRotations(selectedIds, {
+    cropCatalog,
+    currentSequence: currentValid ? currentIds : null,
+    minCount: minSuggested
+  });
+
+  let suggested = candidates.map((rotation) => withComputedData(rotation, context));
+
+  // Ensure at least 3 suggested rotations besides current when current is defined.
+  if (currentValid) {
+    const withoutCurrentDup = suggested.filter(
+      (r) => (r.sequence || []).join('|') !== currentIds.join('|')
+    );
+    if (withoutCurrentDup.length >= 3) suggested = withoutCurrentDup;
+    // if removing duplicate left <3, keep as-is (still >=3 generated) and allow duplicate? better keep >=3
+    if (suggested.length < 3) {
+      suggested = candidates.map((rotation) => withComputedData(rotation, context));
+    }
+  }
+
+  if (suggested.length < 3) {
+    // Safety: pad by regenerating allowing duplicates/variants (generator already tries)
+    suggested = candidates.map((rotation) => withComputedData(rotation, context));
+  }
+
+  const applicable = [...suggested];
+
+  if (currentValid) {
+    const currentRotation = getCurrentRotation(context);
+    if (currentRotation) {
+      // avoid duplicating identical sequence object id issues; keep current explicitly
+      const filtered = applicable.filter(
+        (r) => (r.sequence || []).join('|') !== currentRotation.sequence.join('|')
+      );
+      // total compared set must include current and >=3 others/suggestions
+      while (filtered.length < 3 && candidates[filtered.length]) {
+        filtered.push(withComputedData(candidates[filtered.length], context));
+      }
+      applicable.length = 0;
+      applicable.push(...filtered.slice(0, Math.max(3, filtered.length)), currentRotation);
+    }
+  }
+
+  return applicable;
+}
+
+function getApplicableRotations() {
+  const state = getState();
+  const climate = state.climate;
+
+  if (shouldUseGeneratedComparison(climate)) {
+    const context = {
+      climate,
+      soil: state.soil,
+      crops: cropCatalog
+    };
+    return getGeneratedRotations(context);
+  }
+
+  // Fallback when no usable climate data at all: show labeled demo fallback
+  // rotations (static) only as offline fallback, not as normal computed flow.
+  const selected = new Set(state.crops || []);
+  return demoFallbackRotations.filter(
     (rotation) =>
       rotation.sequence.length > 0 &&
       rotation.sequence.every((cropId) => selected.has(cropId))
   );
-
-  const applicable = context?.compute
-    ? base.map((rotation) => ({ ...rotation, scores: computeRotationScores({
-        sequence: rotation.sequence || [],
-        climate: context.climate,
-        soil: context.soil,
-        crops: context.crops
-      }) }))
-    : base;
-
-  const currentRotation = getCurrentRotation(context);
-  if (currentRotation && currentRotation.sequence.every((cropId) => selected.has(cropId))) {
-    applicable.push(currentRotation);
-  }
-  return applicable;
 }
 
 function getRankedRotations() {
   const state = getState();
   const weights = normalizeWeights(CRITERIA.map((criterion) => state.priorities[criterion.key]));
-  const compute = shouldUseComputedScores(state.climate);
-  const context = {
-    compute,
-    climate: state.climate,
-    soil: state.soil,
-    crops: cropCatalog
-  };
-  return rankRotations(getApplicableRotations(context), weights);
+  return rankRotations(getApplicableRotations(), weights);
 }
 
 function getRotationMessage(ranked, applicableCount) {
+  const selectedCount = (getState().crops || []).length;
   if (applicableCount === 0) {
-    return 'Con los cultivos que elegiste no se arma ninguna rotación de ejemplo. Prueba a seleccionar los cultivos que pide una rotación (por ejemplo: papa, quinua y haba).';
+    if (selectedCount === 0) {
+      return 'Selecciona al menos un cultivo para generar rotaciones comparables.';
+    }
+    return 'No se pudieron generar rotaciones con los cultivos seleccionados. Prueba a elegir cultivos distintos.';
   }
-  if (applicableCount < rotations.length) {
-    const excluded = rotations.length - applicableCount;
-    return `Te mostramos ${applicableCount} opción(es) que sí coinciden con tus cultivos. ${excluded} no aparece(n) porque les falta algún cultivo.`;
+
+  const generated = shouldUseGeneratedComparison(getState().climate);
+  if (!generated) {
+    return 'Mostramos rotaciones de demostración (respaldo sin datos de clima utilizables). Consulta el clima para comparar rotaciones generadas con evidencia derivada.';
   }
-  return 'Estas opciones son orientativas: compáralas con tu experiencia, tu agua disponible y tu suelo.';
+
+  const hasCurrent = ranked.some((rotation) => rotation.origin === 'current');
+  if (hasCurrent) {
+    return 'Comparamos rotaciones generadas a partir de tus cultivos, incluyendo tu rotación actual. La evidencia y los riesgos se derivan del clima, el suelo y la secuencia evaluada.';
+  }
+  return 'Comparamos rotaciones generadas a partir de tus cultivos seleccionados. La evidencia y los riesgos se derivan del clima, el suelo y la secuencia evaluada.';
 }
 
 function renderComparison({ scroll = false } = {}) {
@@ -383,11 +453,10 @@ async function bootstrap() {
     setState({ parcel, soil });
   }
 
-  // Demo rotations are an offline/labeled fallback only. In the live/computed
-  // path scores are computed from NASA climate + soil + crops + priorities;
-  // stored demo scores are kept only for fallback rendering when no computable
-  // climate context is available.
-  rotations = (demo?.rotations ?? []).map((raw) => normalizeRotation(raw, cropCatalog));
+  // Demo rotations are an offline/labeled fallback only. In the normal flow
+  // candidates, scores and evidence/risks are generated from selected crops and
+  // derived from climate/soil/sequence data (not from this static content).
+  demoFallbackRotations = (demo?.rotations ?? []).map((raw) => normalizeRotation(raw, cropCatalog));
   const alerts = demo?.alerts ?? [];
   defaultAlert = alerts.find((alert) => alert.title === 'Déficit hídrico estacional') ?? null;
   baseAlerts = alerts.filter((alert) => alert.title !== 'Déficit hídrico estacional');
