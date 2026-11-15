@@ -183,10 +183,18 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
   map.addLayer(drawnItems);
 
   let currentPolygonLayer = null;
+  let previousPolygonLatlngs = null;
   let isDrawing = false;
   let drawPoints = [];
   let tempPolyline = null;
   let tempVertexMarkers = [];
+
+  const getCurrentPolygonLatlngs = () => {
+    if (!currentPolygonLayer) return null;
+    const flat = normalizePoints(currentPolygonLayer.getLatLngs());
+    if (flat.length < 3) return null;
+    return flat.map((p) => [p.lat, p.lng]);
+  };
 
   const bindLayerPopup = (layer) => {
     const latlngs = layer.getLatLngs();
@@ -249,9 +257,9 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
     hintBanner.classList.add('visible');
     hintBanner.innerHTML = `
       <span>${text}</span>
-      <div style="display:inline-flex; gap:6px; margin-left:8px;">
-        ${showFinish ? '<button type="button" id="btn-draw-finish" class="btn btn-primary" style="margin:0; padding:2px 8px; font-size:10px; width:auto;">✅ Finalizar</button>' : ''}
-        <button type="button" id="btn-draw-cancel" class="btn btn-secondary" style="margin:0; padding:2px 8px; font-size:10px; width:auto; border-color:#ef4444; color:#ef4444;">✕ Cancelar</button>
+      <div style="display:inline-flex; flex-wrap:wrap; justify-content:center; gap:6px;">
+        ${showFinish ? '<button type="button" id="btn-draw-finish" class="btn btn-primary" style="margin:0; padding:4px 10px; font-size:10px; width:auto;">✅ Finalizar</button>' : ''}
+        <button type="button" id="btn-draw-cancel" class="btn btn-secondary" style="margin:0; padding:4px 10px; font-size:10px; width:auto; border-color:#ef4444; color:#ef4444;">✕ Cancelar</button>
       </div>
     `;
 
@@ -273,6 +281,7 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
 
     const finalPoints = [...drawPoints];
     cleanupTempDraw();
+    previousPolygonLatlngs = null;
 
     const layer = setPolygon(finalPoints, true);
     map.fitBounds(layer.getBounds(), { padding: [40, 40] });
@@ -292,6 +301,10 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
 
   const cancelDrawing = () => {
     cleanupTempDraw();
+    if (previousPolygonLatlngs && previousPolygonLatlngs.length >= 3) {
+      setPolygon(previousPolygonLatlngs, false);
+    }
+    previousPolygonLatlngs = null;
   };
 
   const cleanupTempDraw = () => {
@@ -310,9 +323,22 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
 
   const startDrawing = () => {
     cleanupTempDraw();
+    previousPolygonLatlngs = getCurrentPolygonLatlngs();
+    const hadPrevious = Boolean(previousPolygonLatlngs);
+
+    if (hadPrevious) {
+      drawnItems.clearLayers();
+      currentPolygonLayer = null;
+    }
+
     isDrawing = true;
     map.getContainer().style.cursor = 'crosshair';
-    updateHint('🖊️ Haz clic en el mapa para marcar los vértices de tu parcela', false);
+    updateHint(
+      hadPrevious
+        ? '🖊️ Se quitó la parcela anterior. Tocá el mapa para marcar la nueva. Si no querés cambiarla, tocá “Cancelar”.'
+        : '🖊️ Tocá el mapa para marcar los bordes de tu parcela.',
+      false
+    );
   };
 
   // Map click listener specifically when in drawing mode
@@ -345,9 +371,10 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
 
     const n = drawPoints.length;
     if (n >= 3) {
-      updateHint(`📍 ${n} puntos marcados · Haz doble clic o pulsa Finalizar para cerrar la parcela`, true);
+      updateHint(`📍 ${n} puntos marcados · Cuando termines, tocá “Finalizar” para cerrar la parcela.`, true);
     } else {
-      updateHint(`📍 ${n} punto${n > 1 ? 's' : ''} marcado${n > 1 ? 's' : ''} · Continúa marcando las esquinas`, false);
+      const faltan = 3 - n;
+      updateHint(`📍 ${n} punto${n > 1 ? 's' : ''} marcado${n > 1 ? 's' : ''} · Marcá ${faltan} más para poder cerrarla.`, false);
     }
   });
 

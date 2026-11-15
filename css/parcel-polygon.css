@@ -11,16 +11,35 @@
     color: #e2e8f0;
     font-size: 11px;
     padding: 6px 14px;
-    border-radius: 20px;
+    border-radius: 14px;
     z-index: 500;
     pointer-events: auto;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 212, 255, 0.2);
-    white-space: nowrap;
+    white-space: normal;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
     gap: 8px;
+    max-width: calc(100% - 24px);
+    width: max-content;
+    text-align: center;
+    line-height: 1.35;
   }
   .map-hint-banner.visible {
     display: flex;
+  }
+
+  @media (max-width: 540px) {
+    .map-hint-banner {
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      transform: none;
+      width: auto;
+      max-width: none;
+      padding: 8px 10px;
+      font-size: 11px;
+    }
   }
 
   /* ── PARCEL POLYGON POPUP ── */
