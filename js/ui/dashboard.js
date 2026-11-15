@@ -156,14 +156,24 @@ export function renderRegionalContext(regionalContext) {
   node.textContent = '';
 }
 
-function notesHtml(notes) {
-  return notes
-    .map((note) => {
-      const icon = note.type === 'ok' ? '✅' : note.type === 'warn' ? '⚠️' : '❌';
-      const color = note.type === 'ok' ? '#00ff88' : note.type === 'warn' ? '#f59e0b' : '#ef4444';
-      return `<div class="rot-note" style="color:${color}">${icon} <span style="color:var(--text-secondary)">${note.text}</span></div>`;
-    })
-    .join('');
+function noteItemHtml(note) {
+  const icon = note.type === 'ok' ? '✅' : note.type === 'warn' ? '⚠️' : '❌';
+  const color = note.type === 'ok' ? '#00ff88' : note.type === 'warn' ? '#f59e0b' : '#ef4444';
+  return `<div class="rot-note" style="color:${color}">${icon} <span style="color:var(--text-secondary)">${note.text}</span></div>`;
+}
+
+function notesHtml(notes = []) {
+  return notes.map(noteItemHtml).join('');
+}
+
+function keyNotesHtml(notes = [], limit = 2) {
+  if (!Array.isArray(notes) || !notes.length) return '';
+  const rank = { bad: 0, warn: 1, ok: 2 };
+  const picked = [...notes]
+    .sort((a, b) => (rank[a?.type] ?? 3) - (rank[b?.type] ?? 3))
+    .slice(0, limit);
+  if (!picked.length) return '';
+  return `<div class="rot-key-signals" aria-label="Señales clave">${notesHtml(picked)}</div>`;
 }
 
 function criteriaHtml(scores) {
@@ -213,6 +223,25 @@ export function renderRotations(container, ranked, { message = '' } = {}) {
         const pendingNote = rotation.scores
           ? ''
           : '<div class="rot-note" style="color:#94a3b8">ℹ️ <span style="color:var(--text-secondary)">Todavía no calculamos el puntaje de esta rotación.</span></div>';
+        const allNotes = Array.isArray(rotation.notas) ? rotation.notas : [];
+        const keySignals = keyNotesHtml(allNotes, 2);
+        const detailNotes = notesHtml(allNotes);
+        const hasDetail = Boolean(rotation.scores) || allNotes.length > 0;
+        const detailHtml = hasDetail
+          ? `<details class="rot-details">
+              <summary>Ver por qué / detalle</summary>
+              <div class="rot-details-body">
+                <div class="rot-details-section">
+                  <div class="rot-details-label">Puntaje por criterio</div>
+                  <div class="crit-row">${criteriaHtml(rotation.scores)}</div>
+                </div>
+                <div class="rot-details-section">
+                  <div class="rot-details-label">Evidencia y riesgos</div>
+                  <div class="rot-notes">${detailNotes || '<div class="rot-note" style="color:#94a3b8">ℹ️ <span style="color:var(--text-secondary)">Sin evidencia adicional.</span></div>'}</div>
+                </div>
+              </div>
+            </details>`
+          : '';
 
         return `
       <div class="${cardClass}" style="animation: fadeIn 0.4s ease ${rotation.rank * 0.1}s both">
@@ -227,8 +256,9 @@ export function renderRotations(container, ranked, { message = '' } = {}) {
         <div class="score-bar-wrap">
           <div class="score-bar" style="width:${pct}%;background:${color}"></div>
         </div>
-        <div class="crit-row">${criteriaHtml(rotation.scores)}</div>
-        <div class="rot-notes">${notesHtml(rotation.notas)}${pendingNote}</div>
+        ${keySignals}
+        ${pendingNote}
+        ${detailHtml}
       </div>`;
       })
       .join('');

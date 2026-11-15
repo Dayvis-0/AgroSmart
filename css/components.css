@@ -530,6 +530,56 @@
     overflow-wrap: anywhere;
   }
 
+  .rot-key-signals {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 2px 0 6px 0;
+  }
+
+  .rot-details {
+    margin-top: 6px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .rot-details summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 7px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    user-select: none;
+  }
+  .rot-details summary::-webkit-details-marker { display: none; }
+  .rot-details summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 6px;
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+  }
+  .rot-details[open] summary::before { transform: rotate(90deg); }
+  .rot-details[open] summary {
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+  }
+  .rot-details-body {
+    padding: 8px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rot-details-section { display: flex; flex-direction: column; gap: 6px; }
+  .rot-details-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .rot-details .crit-row { margin-bottom: 0; }
+
   /* ── ALERTS ── */
   .alert {
     border-radius: var(--radius-sm);
