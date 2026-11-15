@@ -45,7 +45,7 @@ export function renderClimateCards(summary, meta = null) {
     if (viento) viento.textContent = '—';
     if (rad) rad.textContent = '—';
     document.querySelectorAll('[data-climate-src]').forEach((node) => {
-      node.textContent = `${node.dataset.climateSrc} · —`;
+      node.textContent = `${node.dataset.climateSrc} · sin datos`;
     });
     return;
   }
@@ -63,7 +63,8 @@ export function renderClimateCards(summary, meta = null) {
   document.getElementById('cc-rad').textContent = summary.rad.toFixed(1);
 
   const year = meta?.year ?? (meta?.period?.end ? String(meta.period.end).slice(0, 4) : '2026');
-  const provider = meta?.provider ?? (meta ? 'NASA POWER' : 'Demo');
+  const isDemo = meta?.provider === 'Datos de demostración' || meta?.provider === 'Demo';
+  const provider = isDemo ? 'Ejemplo' : 'Estimación de zona';
   document.querySelectorAll('[data-climate-src]').forEach((node) => {
     const parameter = node.dataset.climateSrc;
     node.textContent = `${parameter} · ${year} · ${provider}`;
@@ -77,42 +78,43 @@ export function renderClimateStatus(status, climate) {
 
   if (status === 'loading') {
     setClimateVisibility(false);
-    node.textContent = '⏳ Consultando NASA POWER…';
-    note.textContent = '';
+    node.textContent = '⏳ Consultando el clima de la zona… esto puede tardar unos segundos.';
+    note.textContent = 'Esperá un momento mientras se cargan los datos.';
     return;
   }
 
   if (status === 'stale') {
     setClimateVisibility(false);
-    node.textContent = '📍 Ubicación cambiada. Presione “Consultar clima” para ver indicadores y tendencias de la nueva ubicación.';
-    note.textContent = '';
+    node.textContent = '📍 Cambiaste la ubicación. Presioná “Consultar clima de mi zona” para ver el clima estimado de este lugar.';
+    note.textContent = 'Cuando cambias de distrito o coordenadas, hay que consultar de nuevo.';
     return;
   }
 
   if (status === 'ready') {
     setClimateVisibility(true);
-    const provider = climate.meta?.provider ?? 'NASA POWER';
+    const isDemo = climate.source === 'demo';
     const period = climate.meta?.period?.start
       ? `${String(climate.meta.period.start).slice(0, 4)}–${String(climate.meta.period.end).slice(0, 4)}`
       : '';
-    node.textContent = `✅ Datos cargados desde ${provider}${period ? ` (${period})` : ''}.`;
-    note.textContent =
-      climate.source === 'demo'
-        ? '⚠️ Mostrando datos de demostración. NASA POWER ofrece estimaciones con resolución ~50 km y no reemplaza una estación meteorológica local.'
-        : '⚠️ Fuente: NASA POWER API · Resolución ~50 km · Estimaciones satelitales/modeladas, no una estación meteorológica local (centroide consultado).';
+    node.textContent = isDemo
+      ? `ℹ️ Estás viendo datos de ejemplo${period ? ` (${period})` : ''}. Te sirven como referencia para probar la herramienta.`
+      : `✅ Listo: clima estimado de tu zona${period ? ` (${period})` : ''}. Usalo como guía para tu decisión.`;
+    note.textContent = isDemo
+      ? '⚠️ Estos son datos de ejemplo. Para tu ubicación, podés presionar “Consultar clima de mi zona”. La estimación no reemplaza una estación local.'
+      : '⚠️ Es una estimación para la zona (aprox. 50 km). No es lo mismo que medir en tu chacra, pero ayuda a orientarte.';
     return;
   }
 
   if (status === 'error') {
     const hasData = Boolean(climate.summary);
     setClimateVisibility(hasData);
-    const reason = climate.error?.message ?? 'Error desconocido.';
+    const reason = climate.error?.message ?? 'Hubo un problema.';
     node.textContent = hasData
-      ? `❌ No se pudo consultar NASA POWER: ${reason} Se muestran datos de demostración.`
-      : `❌ No se pudo consultar NASA POWER: ${reason} Presione “Consultar clima” para intentar nuevamente.`;
+      ? `❌ No se pudo consultar el clima ahora (${reason}). Te mostramos datos de ejemplo para que puedas seguir.`
+      : `❌ No se pudo consultar el clima ahora (${reason}). Revisá tu conexión y probá de nuevo con “Consultar clima de mi zona”.`;
     note.textContent = hasData
-      ? '⚠️ Fallback activo: datos de demostración. Verifique la conexión e intente consultar nuevamente.'
-      : '';
+      ? '⚠️ Mientras tanto, los datos que ves son de ejemplo. Podés intentar consultar otra vez.'
+      : 'Cuando se conecte, vas a poder ver la estimación de tu zona.';
   }
 }
 

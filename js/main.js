@@ -102,13 +102,13 @@ function getRankedRotations() {
 
 function getRotationMessage(ranked, applicableCount) {
   if (applicableCount === 0) {
-    return 'No hay rotaciones viables con los cultivos seleccionados. Seleccione los cultivos necesarios para al menos una rotación (p. ej. Papa, Quinua y Haba).';
+    return 'Con los cultivos que elegiste no se arma ninguna rotación de ejemplo. Probá seleccionar los cultivos que pide una rotación (por ejemplo: papa, quinua y haba).';
   }
   if (applicableCount < rotations.length) {
     const excluded = rotations.length - applicableCount;
-    return `Mostrando ${applicableCount} rotación(es) compatible(s) con los cultivos seleccionados. ${excluded} no aplica(n) por cultivos faltantes.`;
+    return `Te mostramos ${applicableCount} opción(es) que sí calzan con tus cultivos. ${excluded} no aparece(n) porque les falta algún cultivo.`;
   }
-  return '';
+  return 'Estas opciones son orientativas: comparalas con tu experiencia, tu agua disponible y tu suelo.';
 }
 
 function renderComparison({ scroll = false } = {}) {

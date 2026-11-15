@@ -124,7 +124,7 @@ async function handleLocate(onLocationChange) {
     setMarker(lat, lon, {
       zoom: 14,
       openPopup: true,
-      popupHtml: `<b>🎯 Tu ubicación detectada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>${place ? `${place} · ` : ''}Precisión GPS: ~${Math.round(accuracy)} m</small>`
+      popupHtml: `<b>🎯 Ubicación encontrada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>${place ? `${place} · ` : ''}Aproximada (±${Math.round(accuracy)} m)</small>`
     });
     if (typeof onLocationChange === 'function') onLocationChange();
   } catch (error) {
@@ -161,7 +161,7 @@ async function handleSearchLocation(onLocationChange) {
     }
 
     if (typeof lat !== 'number' || typeof lon !== 'number' || isNaN(lat) || isNaN(lon)) {
-      throw new Error('No se encontró una ubicación para el distrito seleccionado.');
+      throw new Error('No se pudo ubicar ese lugar. Probá elegir solo el distrito.');
     }
 
     byId('in-lat').value = Number(lat).toFixed(4);
@@ -173,7 +173,7 @@ async function handleSearchLocation(onLocationChange) {
       community,
       zoom,
       openPopup: true,
-      popupHtml: `<b>📍 Ubicación seleccionada</b><br>Lat: ${Number(lat).toFixed(4)}<br>Lon: ${Number(lon).toFixed(4)}<br><small>${place || district || 'Andahuaylas, Apurímac'}${foundByGeocode ? '' : ' · aproximada por distrito'}</small>`
+      popupHtml: `<b>📍 Ubicación en el mapa</b><br>Lat: ${Number(lat).toFixed(4)}<br>Lon: ${Number(lon).toFixed(4)}<br><small>${place || district || 'Andahuaylas, Apurímac'}${foundByGeocode ? '' : ' · aproximada según el distrito'}</small>`
     });
     if (typeof onLocationChange === 'function') onLocationChange();
   } catch (error) {
@@ -183,9 +183,9 @@ async function handleSearchLocation(onLocationChange) {
       syncParcelState();
       setMarker(preset.lat, preset.lon, { district, community, zoom: 12, openPopup: true });
       if (typeof onLocationChange === 'function') onLocationChange();
-      alertMessage('No se pudo ubicar la comunidad con precisión. Se usó la ubicación aproximada del distrito.');
+      alertMessage('No pudimos ubicar la comunidad con exactitud. Te mostramos una ubicación aproximada del distrito para que puedas seguir.');
     } else {
-      alertMessage(error.message || 'No se pudo buscar la ubicación.');
+      alertMessage(error.message || 'No se pudo buscar la ubicación. Probá elegir un distrito de la lista.');
     }
   } finally {
     hideOverlay('map-loading');
@@ -195,7 +195,7 @@ async function handleSearchLocation(onLocationChange) {
 async function requestClimate(coords = readCoordinates()) {
   const coordinates = { lat: Number(coords.lat), lon: Number(coords.lon) };
   if (!coordinatesAreValid(coordinates)) {
-    alertMessage('Por favor ingrese coordenadas válidas.\nLatitud: -90 a 90\nLongitud: -180 a 180');
+    alertMessage('Revisá la ubicación: la latitud debe estar entre -90 y 90, y la longitud entre -180 y 180.');
     return;
   }
 

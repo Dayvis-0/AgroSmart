@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AgroSmart — Plataforma Inteligente de Apoyo Agrícola</title>
+<title>AgroSmart — Apoyo para tu parcela</title>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -26,7 +26,7 @@
     <span class="logo-icon">🌱</span>
     <div>
       <div class="logo-text">AGROSMART</div>
-      <div class="logo-sub">NASA Space Apps 2026 — Field Shift</div>
+      <div class="logo-sub">Apoyo agrícola para tu chacra</div>
     </div>
   </div>
 
@@ -36,9 +36,7 @@
   </div>
 
   <div class="topbar-status">
-    <div class="status-item"><div class="status-dot"></div><span class="si-label">NASA POWER</span></div>
-    <div class="status-item"><div class="status-dot"></div><span class="si-label">NASA GIBS</span></div>
-    <div class="status-item"><div class="status-dot amber"></div><span class="si-label">Datos demo</span></div>
+    <div class="status-item"><div class="status-dot amber"></div><span class="si-label">Estimaciones (no estación local)</span></div>
   </div>
 </header>
 
@@ -47,16 +45,16 @@
 
   <!-- ─────────── LEFT COLUMN ─────────── -->
   <div class="col" id="col-left">
-    <div class="col-header"><div class="dot"></div> DATOS DE PARCELA</div>
+    <div class="col-header"><div class="dot"></div> PASO 1 Y 2: TU PARCELA Y TU SUELO</div>
 
-    <!-- Ubicar parcela -->
+    <!-- Paso 1: Ubicar parcela -->
     <div class="card parcel-filter-panel-inline" id="parcel-filter-panel" aria-hidden="false">
-      <div class="card-title">📍 Ubicar parcela</div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline">Ajustá distrito o coordenadas para centrar el mapa y consultar clima.</div>
+      <div class="card-title">📍 Paso 1: Ubicá tu parcela</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Elegí tu distrito y, si sabés, tu comunidad. Esto ayuda a ubicar el mapa y pedir el clima estimado de la zona.</div>
 
-      <label for="sel-distrito">Distrito (preset de coordenadas)</label>
+      <label for="sel-distrito">Distrito</label>
       <select id="sel-distrito">
-        <option value="">— Seleccionar —</option>
+        <option value="">— Elegir distrito —</option>
         <option value="Andahuaylas">Andahuaylas</option>
         <option value="Talavera">Talavera</option>
         <option value="San Jerónimo">San Jerónimo</option>
@@ -67,39 +65,41 @@
         <option value="Andarapa">Andarapa</option>
       </select>
 
-      <label for="in-comunidad">Comunidad / Sector <span class="field-hint">(opcional)</span></label>
+      <label for="in-comunidad">Comunidad o sector <span class="field-hint">(opcional)</span></label>
       <input type="text" id="in-comunidad" placeholder="Ej. Argama Baja" />
 
       <div class="input-row">
         <div>
-          <label for="in-lat">Latitud</label>
+          <label for="in-lat">Latitud <span class="field-hint">(norte/sur)</span></label>
           <input type="number" id="in-lat" value="-13.6539" step="0.0001" min="-90" max="90" />
         </div>
         <div>
-          <label for="in-lon">Longitud</label>
+          <label for="in-lon">Longitud <span class="field-hint">(este/oeste)</span></label>
           <input type="number" id="in-lon" value="-73.3875" step="0.0001" min="-180" max="180" />
         </div>
       </div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:6px;">Si no sabés las coordenadas, no pasa nada: elegí el distrito y usá “Buscar ubicación”.</div>
 
       <div class="parcel-filter-actions parcel-filter-actions--inline">
-        <button type="button" class="btn btn-secondary" id="btn-buscar-ubicacion" title="Buscar ubicación según distrito y comunidad">🔎 Buscar ubicación</button>
+        <button type="button" class="btn btn-secondary" id="btn-buscar-ubicacion" title="Buscar ubicación según distrito y comunidad">🔎 Buscar ubicación en el mapa</button>
       </div>
     </div>
 
-    <!-- Ficha del Suelo -->
+    <!-- Paso 2: Ficha del Suelo -->
     <div class="card">
       <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
-        <span>🏔️ Ficha del Suelo</span>
+        <span>🏔️ Paso 2: Contá cómo es tu suelo y agua</span>
         <span id="soil-mode-badge" class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Modo Agricultor</span>
       </div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Elegí la opción que más se parezca a tu chacra. Si tenés análisis de laboratorio, podés usar el modo Agrónomo.</div>
 
       <!-- Switch de Perfil -->
       <div style="display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 3px; margin: 8px 0 12px 0; gap: 4px;">
         <button type="button" id="tab-productor" onclick="setSoilProfile('productor')" style="flex: 1; padding: 6px 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; border-radius: var(--radius-sm); border: none; background: rgba(0,212,255,0.15); color: var(--accent-cyan); cursor: pointer; transition: all 0.2s; font-weight: 600;">
-          👨‍🌾 Agricultor
+          👨‍🌾 Agricultor (sencillo)
         </button>
         <button type="button" id="tab-agronomo" onclick="setSoilProfile('agronomo')" style="flex: 1; padding: 6px 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
-          🔬 Agrónomo
+          🔬 Agrónomo (avanzado)
         </button>
       </div>
 
@@ -107,32 +107,32 @@
       <div id="view-productor">
         <label>¿Cómo es la tierra de tu chacra?</label>
         <select id="sel-tipo-simple" onchange="applySimpleSoil(this.value)">
-          <option value="negra" selected>🌱 Tierra negra / suelta y fértil (Típico Franco)</option>
-          <option value="arenosa">🏜️ Tierra arenosa / cascajosa (Seca rápido)</option>
-          <option value="gredosa">🧱 Tierra pesada / gredosa (Retiene agua)</option>
+          <option value="negra" selected>🌱 Tierra negra / suelta y fértil (guarda bien nutrientes)</option>
+          <option value="arenosa">🏜️ Tierra arenosa / cascajosa (se seca rápido)</option>
+          <option value="gredosa">🧱 Tierra pesada / gredosa (retiene más agua)</option>
         </select>
 
         <label style="margin-top: 10px;">¿De dónde recibe agua tu cultivo?</label>
         <div class="radio-group" style="margin-top: 6px;">
           <label><input type="radio" name="agua-simple" value="riego" onchange="syncWater(this.value)" /><span>💧 Riego por canal</span></label>
-          <label><input type="radio" name="agua-simple" value="lluvia" checked onchange="syncWater(this.value)" /><span>🌧️ Solo lluvia (Secano)</span></label>
-          <label><input type="radio" name="agua-simple" value="mixto" onchange="syncWater(this.value)" /><span>🔄 Mixto</span></label>
+          <label><input type="radio" name="agua-simple" value="lluvia" checked onchange="syncWater(this.value)" /><span>🌧️ Solo lluvia (secano)</span></label>
+          <label><input type="radio" name="agua-simple" value="mixto" onchange="syncWater(this.value)" /><span>🔄 Mixto (riego y lluvia)</span></label>
         </div>
 
         <div style="margin-top: 12px; padding: 8px 10px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: var(--radius-sm); font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
-          ✅ <strong style="color: var(--accent-green);">Estimación automática activa:</strong> Suelo típico de Andahuaylas precargado (pH ~6.2, drenaje moderado). No requieres análisis de laboratorio.
+          ✅ <strong style="color: var(--accent-green);">Usando una estimación de suelo</strong> común de la zona para ayudarte a empezar. No reemplaza un análisis de laboratorio, pero sirve como guía inicial.
         </div>
       </div>
 
       <!-- VISTA 2: MODO AGRÓNOMO (Ficha Técnica Avanzada) -->
       <div id="view-agronomo" style="display: none;">
         <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 8px;">
-          🔬 Ingrese los valores específicos de su análisis de suelo de laboratorio:
+          🔬 Si tenés resultados de laboratorio, ingresalos acá para afinar la recomendación.
         </p>
 
         <div class="field-label-row">
           <label>Textura de suelo</label>
-          <span class="source-badge badge-informado">informado</span>
+          <span class="source-badge badge-informado">según dato</span>
         </div>
         <select id="sel-textura">
           <option value="franca" selected>Franca</option>
@@ -149,19 +149,19 @@
         <input type="number" id="in-ph" value="6.2" step="0.1" min="4.0" max="8.5" />
 
         <div class="field-label-row">
-          <label>Materia Orgánica</label>
-          <span class="source-badge badge-desconocido">desconocido</span>
+          <label>Materia orgánica</label>
+          <span class="source-badge badge-desconocido">sin dato</span>
         </div>
         <select id="sel-mo">
           <option value="alta">Alta (&gt;4%)</option>
           <option value="media" selected>Media (2–4%)</option>
           <option value="baja">Baja (&lt;2%)</option>
-          <option value="desconocida">Desconocida</option>
+          <option value="desconocida">No lo sé</option>
         </select>
 
         <div class="field-label-row">
           <label>Drenaje</label>
-          <span class="source-badge badge-informado">informado</span>
+          <span class="source-badge badge-informado">según dato</span>
         </div>
         <select id="sel-drenaje">
           <option value="bueno">Bueno</option>
@@ -171,7 +171,7 @@
         </select>
 
         <div class="field-label-row" style="margin-top:10px">
-          <label style="margin:0">Disponibilidad de Agua</label>
+          <label style="margin:0">Disponibilidad de agua</label>
         </div>
         <div class="radio-group" style="margin-top:6px">
           <label><input type="radio" name="agua" value="riego" onchange="syncWaterSimple(this.value)" /><span>💧 Riego</span></label>
@@ -179,75 +179,74 @@
           <label><input type="radio" name="agua" value="mixto" onchange="syncWaterSimple(this.value)" /><span>🔄 Mixto</span></label>
         </div>
 
-        <button class="btn btn-secondary" id="btn-guardar" style="margin-top: 12px;">💾 Guardar Ficha Técnica</button>
+        <button class="btn btn-secondary" id="btn-guardar" style="margin-top: 12px;">💾 Guardar datos de suelo</button>
       </div>
     </div>
 
-    <!-- Estado de Conexión -->
+    <!-- Nota sobre la información -->
     <div class="card section-pad">
-      <div class="card-title">🔌 Estado de Conexión</div>
-      <div class="conn-status">
-        <div class="conn-row"><span>NASA POWER API</span><span>● ACTIVO</span></div>
-        <div class="conn-row"><span>Leaflet / OpenStreetMap</span><span>● ACTIVO</span></div>
-        <div class="conn-row"><span>NASA GIBS WMS</span><span>● ACTIVO</span></div>
-        <div class="conn-row"><span>Datos locales</span><span style="color:var(--accent-amber)">● DEMO</span></div>
+      <div class="card-title">ℹ️ Sobre esta información</div>
+      <div class="parcel-filter-sub" style="margin-top:0;">
+        Esta herramienta usa estimaciones climáticas de zona y datos de ejemplo para orientar decisiones. No reemplaza la observación en tu parcela ni la recomendación de un especialista.
       </div>
     </div>
   </div>
 
   <!-- ─────────── CENTER COLUMN ─────────── -->
   <div class="col" id="col-center">
-    <div class="col-header"><div class="dot"></div> MONITOREO SATELITAL Y CLIMA</div>
+    <div class="col-header"><div class="dot"></div> PASO 3: MAPA Y CLIMA DE TU ZONA</div>
 
     <!-- Map -->
     <div class="card map-card">
       <div class="card-title map-card-title">
-        <span>🗺️ Visor de Parcela</span>
+        <span>🗺️ Mapa de tu parcela</span>
         <div style="display:flex; gap:8px; align-items:center;">
-          <button type="button" id="btn-delimitar-parcela" class="btn btn-primary" style="margin-top:0; padding:6px 12px; font-size:11px; width:auto; font-weight:700;" title="Dibujar el polígono de tu parcela en el mapa">
-            📐 Delimitar parcela
+          <button type="button" id="btn-delimitar-parcela" class="btn btn-primary" style="margin-top:0; padding:6px 12px; font-size:11px; width:auto; font-weight:700;" title="Dibujar el contorno de tu parcela en el mapa">
+            📐 Marcar mi parcela
           </button>
-          <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="true" aria-controls="parcel-filter-panel" title="Ir al panel de ubicación de parcela">
-            📍 Coordenadas
+          <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="true" aria-controls="parcel-filter-panel" title="Ir al panel de ubicación">
+            📍 Ir a ubicación
           </button>
         </div>
       </div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Revisá que el punto del mapa esté cerca de tu parcela. Si querés, podés marcar el contorno.</div>
 
       <div id="map"></div>
       <!-- Draw hint banner shown while polygon tool is active -->
       <div class="map-hint-banner" id="map-draw-hint" aria-live="polite">
-        🖊️ Haz click para agregar vértices · Doble click para cerrar el polígono
+        🖊️ Hacé clic para marcar los bordes · Doble clic para cerrar el contorno
       </div>
       <div class="loading-overlay" id="map-loading"><div class="spinner"></div></div>
     </div>
 
     <!-- Climate Cards -->
     <div class="card">
-      <div class="card-title">🌐 Indicadores Climáticos — NASA POWER</div>
+      <div class="card-title">🌦️ Paso 3: Clima estimado de tu zona</div>
       <div id="climate-status" class="chart-note" style="margin-top:0;margin-bottom:10px;">
-        ℹ️ Datos de demostración cargados. Presione “Consultar Clima” para obtener valores reales de NASA POWER.
+        ℹ️ Se muestran datos de ejemplo. Cuando estés listo, presioná “Consultar clima de mi zona” para ver una estimación según la ubicación.
       </div>
-      <button type="button" class="btn btn-primary" id="btn-consultar" style="margin-top:0;margin-bottom:10px;">🛰️ Consultar clima</button>
+      <button type="button" class="btn btn-primary" id="btn-consultar" style="margin-top:0;margin-bottom:10px;">🌦️ Consultar clima de mi zona</button>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (aprox. 50 km), no mediciones exactas de tu chacra.</div>
       <div class="climate-grid">
         <div class="climate-card">
-          <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura actual</div>
-          <div class="cc-value" id="cc-temp-act">18.5</div><div class="cc-unit">°C</div>
-          <div class="cc-src" id="cc-temp-sub">Media: <span id="cc-temp">12.3</span>°C · T2M NASA POWER</div>
+          <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura</div>
+          <div class="cc-value" id="cc-temp-act">18.5</div><div class="cc-unit">°C reciente estimada</div>
+          <div class="cc-src" id="cc-temp-sub">Promedio del periodo: <span id="cc-temp">12.3</span> °C</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">🌧️</div><div class="cc-label">Precipitación anual</div>
-          <div class="cc-value" id="cc-prec">723</div><div class="cc-unit">mm/año</div>
-          <div class="cc-src" data-climate-src="PRECTOTCORR">PRECTOTCORR · 2024 · Demo</div>
+          <div class="cc-icon">🌧️</div><div class="cc-label">Lluvia en el año</div>
+          <div class="cc-value" id="cc-prec">723</div><div class="cc-unit">mm al año (estimado)</div>
+          <div class="cc-src" data-climate-src="Lluvia estimada">Lluvia estimada · 2024 · Ejemplo</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">💨</div><div class="cc-label">Viento a 10 m</div>
-          <div class="cc-value" id="cc-viento">3.1</div><div class="cc-unit">m/s</div>
-          <div class="cc-src" data-climate-src="WS10M">WS10M · 2024 · Demo</div>
+          <div class="cc-icon">💨</div><div class="cc-label">Viento</div>
+          <div class="cc-value" id="cc-viento">3.1</div><div class="cc-unit">m/s (estimado)</div>
+          <div class="cc-src" data-climate-src="Viento estimado">Viento estimado · 2024 · Ejemplo</div>
         </div>
         <div class="climate-card">
-          <div class="cc-icon">☀️</div><div class="cc-label">Radiación solar</div>
-          <div class="cc-value" id="cc-rad">4.8</div><div class="cc-unit">kWh/m²/día</div>
-          <div class="cc-src" data-climate-src="ALLSKY_SFC_SW_DWN">ALLSKY_SFC_SW_DWN · 2024 · Demo</div>
+          <div class="cc-icon">☀️</div><div class="cc-label">Sol / radiación</div>
+          <div class="cc-value" id="cc-rad">4.8</div><div class="cc-unit">kWh/m² por día (estimado)</div>
+          <div class="cc-src" data-climate-src="Radiación solar estimada">Radiación solar estimada · 2024 · Ejemplo</div>
         </div>
       </div>
     </div>
@@ -255,58 +254,60 @@
     <!-- Chart -->
     <div class="card">
       <div class="chart-controls">
-        <div class="card-title" style="margin:0">📈 Tendencias Mensuales</div>
+        <div class="card-title" style="margin:0">📈 Cómo varía el clima en el año</div>
         <div class="period-btns">
-          <button class="period-btn" data-period="6m">6M</button>
-          <button class="period-btn active" data-period="1a">1A</button>
-          <button class="period-btn" data-period="2a">2A</button>
+          <button class="period-btn" data-period="6m">6 meses</button>
+          <button class="period-btn active" data-period="1a">1 año</button>
+          <button class="period-btn" data-period="2a">2 años</button>
         </div>
       </div>
       <div class="chart-wrapper">
         <canvas id="clima-chart"></canvas>
       </div>
       <div class="chart-note" id="climate-note">
-        ⚠️ Datos de demostración. NASA POWER ofrece estimaciones con resolución ~50 km y no reemplaza una estación meteorológica local.
+        ⚠️ Estos valores son de ejemplo o estimaciones de zona. Usalos como referencia, no como medición exacta de tu parcela.
       </div>
     </div>
   </div>
 
   <!-- ─────────── RIGHT COLUMN ─────────── -->
   <div class="col" id="col-right">
-    <div class="col-header"><div class="dot"></div> MOTOR DE DECISIÓN AGRÍCOLA</div>
+    <div class="col-header"><div class="dot"></div> PASO 4 Y 5: CULTIVOS Y RECOMENDACIONES</div>
 
     <!-- Cultivos -->
     <div class="card">
-      <div class="card-title">🌾 Catálogo de Cultivos</div>
+      <div class="card-title">🌾 Paso 4: Elegí los cultivos que te interesan</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Tocá los cultivos que tenés o querés probar. Esto ayuda a ver qué rotaciones son posibles.</div>
       <div class="crop-grid" id="crop-grid"></div>
     </div>
 
     <!-- Prioridades -->
     <div class="card">
-      <div class="card-title">⚖️ Prioridades del Agricultor (1–5)</div>
+      <div class="card-title">⚖️ ¿Qué es más importante para vos?</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Mové cada barra del 1 al 5: <strong>1 = poco importante</strong>, <strong>5 = muy importante</strong>.</div>
 
       <div class="slider-row">
-        <div class="slider-label">💧 Ahorro de agua</div>
+        <div class="slider-label">💧 Cuidar el agua</div>
         <input type="range" min="1" max="5" value="4" id="pr-agua" />
         <div class="slider-val" id="sv-agua">4</div>
       </div>
       <div class="slider-row">
-        <div class="slider-label">🌱 Salud del suelo</div>
+        <div class="slider-label">🌱 Cuidar el suelo</div>
         <input type="range" min="1" max="5" value="3" id="pr-suelo" />
         <div class="slider-val" id="sv-suelo">3</div>
       </div>
       <div class="slider-row">
-        <div class="slider-label">📈 Productividad</div>
+        <div class="slider-label">📈 Sacar buena cosecha</div>
         <input type="range" min="1" max="5" value="5" id="pr-prod" />
         <div class="slider-val" id="sv-prod">5</div>
       </div>
       <div class="slider-row">
-        <div class="slider-label">💰 Costo-beneficio</div>
+        <div class="slider-label">💰 Gastar y ganar mejor</div>
         <input type="range" min="1" max="5" value="3" id="pr-costo" />
         <div class="slider-val" id="sv-costo">3</div>
       </div>
       <div class="slider-row">
-        <div class="slider-label">⛈️ Riesgo climático</div>
+        <div class="slider-label">⛈️ Evitar riesgos de clima</div>
         <input type="range" min="1" max="5" value="4" id="pr-riesgo" />
         <div class="slider-val" id="sv-riesgo">4</div>
       </div>
@@ -315,25 +316,25 @@
 
     <!-- Acciones de comparación -->
     <div id="comparison-actions" style="margin:0 12px 12px 12px; display:flex; gap:8px; flex-wrap:wrap;">
-      <button class="btn btn-primary" id="btn-comparar" style="margin-top:0; flex:1;">🔄 Comparar Rotaciones</button>
-      <button class="btn btn-pdf-download" id="btn-descargar-pdf" style="display:none; margin-top:0; flex:1;" title="Descargar informe técnico agronómico en PDF">📥 Descargar Reporte PDF</button>
+      <button class="btn btn-primary" id="btn-comparar" style="margin-top:0; flex:1;">🔄 Paso 5: Ver recomendaciones</button>
+      <button class="btn btn-pdf-download" id="btn-descargar-pdf" style="display:none; margin-top:0; flex:1;" title="Descargar un informe en PDF">📥 Descargar informe PDF</button>
     </div>
 
     <!-- Resultados y alertas: se exportan en PDF al comparar -->
     <div class="card" id="card-resultados" style="display:none">
-      <div class="card-title">📊 Comparación de Rotaciones</div>
+      <div class="card-title">📊 Recomendaciones de rotación</div>
       <div id="rotaciones-container"><!-- se rellena con JS --></div>
     </div>
 
     <div class="card section-pad" id="card-alertas" style="display:none">
-      <div class="card-title">🔔 Centro de Alertas</div>
+      <div class="card-title">🔔 Avisos importantes</div>
       <div id="alerts-container"></div>
     </div>
   </div><!-- /col-right -->
 </div><!-- /main-grid -->
 
 <div class="disclaimer-bar">
-  🛰️ NASA POWER · NASA GIBS · Datos de demostración — No representa una estación meteorológica local ni sustituye el diagnóstico de un especialista agrónomo · AgroSmart v1.0 · NASA Space Apps Challenge 2026
+  ℹ️ Las recomendaciones y el clima son estimaciones para orientar tu decisión. No reemplazan la observación en tu chacra ni el consejo de un especialista agrónomo.
 </div>
 
 <!-- ═══════════ SCRIPTS ═══════════ -->
