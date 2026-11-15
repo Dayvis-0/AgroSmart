@@ -1,9 +1,11 @@
 import { DEFAULT_PARCEL, MAPTILER_ATTRIBUTION, MAPTILER_KEY } from '../config.js';
+import { initParcelPolygon } from './parcel-polygon.js';
 
 export const LOCATE_EVENT = 'agrosmart:locate';
 
 let map = null;
 let marker = null;
+let _parcelPolygon = null;
 
 function baseLayer(name, extension) {
   return L.tileLayer(
@@ -34,7 +36,7 @@ function createLocateControl() {
   return control;
 }
 
-export function initMap({ onPick }) {
+export function initMap({ onPick, onPolygonComplete }) {
   map = L.map('map', { zoomControl: true, attributionControl: true });
   map.setView([DEFAULT_PARCEL.lat, DEFAULT_PARCEL.lon], 11);
 
@@ -48,20 +50,31 @@ export function initMap({ onPick }) {
     '🛰️ Satélite': satelliteLayer,
     '🏔️ Topográfico': topoLayer
   };
-  L.control.layers(baseLayers, {}, { collapsed: false }).addTo(map);
+  L.control.layers(baseLayers, {}, { collapsed: true }).addTo(map);
   createLocateControl().addTo(map);
 
+  // Orange circle marker matching reference image
+  const dotIcon = L.divIcon({
+    className: 'parcel-dot-icon',
+    html: '<div style="width:14px;height:14px;border-radius:50%;background:#f97316;border:2px solid #ffffff;box-shadow:0 0 8px rgba(249,115,22,0.8);"></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7]
+  });
+
   marker = L.marker([DEFAULT_PARCEL.lat, DEFAULT_PARCEL.lon], {
+    icon: dotIcon,
     title: 'Parcela seleccionada'
   }).addTo(map);
 
   marker
     .bindPopup(
       `<b>Parcela</b><br>Lat: ${DEFAULT_PARCEL.lat}<br>Lon: ${DEFAULT_PARCEL.lon}<br><small>Andahuaylas, Apurímac</small>`
-    )
-    .openPopup();
+    );
 
   map.on('click', function onMapClick(event) {
+    if (_parcelPolygon && _parcelPolygon.isDrawingActive()) {
+      return; // Ignore general map click while drawing polygon points
+    }
     const { lat, lng } = event.latlng;
     if (marker) {
       marker.setLatLng([lat, lng]);
@@ -72,6 +85,29 @@ export function initMap({ onPick }) {
     }
     if (typeof onPick === 'function') onPick(lat, lng);
   });
+
+  // Parcel polygon drawing
+  _parcelPolygon = initParcelPolygon(map, {
+    onPolygonComplete: (result) => {
+      // Move the pin marker to the centroid of the drawn polygon
+      if (marker) {
+        marker.setLatLng([result.lat, result.lng]);
+        marker.closePopup();
+      }
+      if (typeof onPolygonComplete === 'function') {
+        onPolygonComplete(result);
+      }
+      if (typeof onPick === 'function') {
+        onPick(result.lat, result.lng);
+      }
+    }
+  });
+}
+
+export function startParcelDrawing() {
+  if (_parcelPolygon && typeof _parcelPolygon.triggerDraw === 'function') {
+    _parcelPolygon.triggerDraw();
+  }
 }
 
 export function setMarker(lat, lon, { district = '', community = '', popupHtml, zoom, openPopup = false } = {}) {

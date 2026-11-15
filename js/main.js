@@ -120,6 +120,38 @@ function setupDownloadButtons() {
   if (btnDescargarCard) btnDescargarCard.addEventListener('click', onDownload);
 }
 
+function handlePolygonComplete({ lat, lng, latlngs, ha }) {
+  const latInput = byId('in-lat');
+  const lonInput = byId('in-lon');
+  if (latInput) latInput.value = lat.toFixed(4);
+  if (lonInput) lonInput.value = lng.toFixed(4);
+
+  const community = (byId('in-comunidad')?.value || '').trim();
+  const district = byId('sel-distrito')?.value || '';
+
+  const confPlace = byId('conf-place');
+  const confCoords = byId('conf-coords');
+  if (confPlace) {
+    const placeName = [community, district].filter(Boolean).join(', ') || 'Polígono delimitado';
+    confPlace.textContent = `${placeName} (${ha.toFixed(2)} ha)`;
+  }
+  if (confCoords) {
+    confCoords.textContent = `Lat: ${lat.toFixed(4)}° · Lon: ${lng.toFixed(4)}°`;
+  }
+
+  setState({
+    parcel: {
+      ...getState().parcel,
+      lat,
+      lon: lng,
+      district,
+      community,
+      polygon: latlngs,
+      areaHa: ha
+    }
+  });
+}
+
 function handleMapPick(lat, lon) {
   const latInput = byId('in-lat');
   const lonInput = byId('in-lon');
@@ -128,10 +160,18 @@ function handleMapPick(lat, lon) {
 
   if (latInput) latInput.value = lat.toFixed(4);
   if (lonInput) lonInput.value = lon.toFixed(4);
-  if (districtInput) districtInput.value = '';
 
-  const district = '';
+  const district = districtInput?.value || '';
   const community = (communityInput?.value || '').trim();
+
+  const confPlace = byId('conf-place');
+  const confCoords = byId('conf-coords');
+  if (confPlace) {
+    confPlace.textContent = [community, district].filter(Boolean).join(', ') || 'Ubicación seleccionada';
+  }
+  if (confCoords) {
+    confCoords.textContent = `Lat: ${lat.toFixed(4)}° · Lon: ${lon.toFixed(4)}°`;
+  }
 
   setMarker(lat, lon, { district, community, openPopup: true });
   setState({ parcel: { ...getState().parcel, lat, lon, district, community } });
@@ -180,7 +220,7 @@ async function bootstrap() {
 
   if (crops) renderCrops(byId('crop-grid'), crops, getState().crops);
 
-  initMap({ onPick: handleMapPick });
+  initMap({ onPick: handleMapPick, onPolygonComplete: handlePolygonComplete });
 
   subscribe((state, previous) => {
     if (state.climate === previous.climate) return;

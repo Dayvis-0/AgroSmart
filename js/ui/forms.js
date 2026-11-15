@@ -3,7 +3,7 @@ import { PERIODS } from '../config.js';
 import { getSelectedIds, toggleCrop } from '../agriculture/crop-catalog.js';
 import { CRITERIA } from '../agriculture/rotation-engine.js';
 import { saveSoil } from '../agriculture/soil-manager.js';
-import { LOCATE_EVENT, locateUser, setMarker } from '../map/map-controller.js';
+import { LOCATE_EVENT, locateUser, setMarker, startParcelDrawing } from '../map/map-controller.js';
 import { getState, setState } from '../state.js';
 import { alertMessage, busyButton, hideOverlay, showOverlay } from './notifications.js';
 
@@ -316,6 +316,8 @@ export function initForms({ chart, onCompare }) {
 
   if (btnBuscarUbicacion) btnBuscarUbicacion.addEventListener('click', handleSearchLocation);
   document.addEventListener(LOCATE_EVENT, handleLocate);
+  const btnDelimitar = byId('btn-delimitar-parcela');
+  if (btnDelimitar) btnDelimitar.addEventListener('click', () => startParcelDrawing());
   if (btnConsultar) btnConsultar.addEventListener('click', handleClimateQuery);
   if (btnGuardar) btnGuardar.addEventListener('click', handleSaveSoil);
   if (btnComparar) btnComparar.addEventListener('click', (event) => handleCompare(event, onCompare));

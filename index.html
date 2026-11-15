@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/styles.css" />
 <link rel="stylesheet" href="css/layout.css" />
 <link rel="stylesheet" href="css/components.css" />
+<link rel="stylesheet" href="css/parcel-polygon.css" />
 <link rel="stylesheet" href="css/responsive.css" />
 </head>
 
@@ -203,12 +204,21 @@
     <div class="card map-card">
       <div class="card-title map-card-title">
         <span>🗺️ Visor de Parcela</span>
-        <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="true" aria-controls="parcel-filter-panel" title="Ir al panel de ubicación de parcela">
-          📍 Ubicar parcela
-        </button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button type="button" id="btn-delimitar-parcela" class="btn btn-primary" style="margin-top:0; padding:6px 12px; font-size:11px; width:auto; font-weight:700;" title="Dibujar el polígono de tu parcela en el mapa">
+            📐 Delimitar parcela
+          </button>
+          <button type="button" id="btn-toggle-filter" class="btn btn-secondary parcel-filter-toggle" aria-expanded="true" aria-controls="parcel-filter-panel" title="Ir al panel de ubicación de parcela">
+            📍 Coordenadas
+          </button>
+        </div>
       </div>
 
       <div id="map"></div>
+      <!-- Draw hint banner shown while polygon tool is active -->
+      <div class="map-hint-banner" id="map-draw-hint" aria-live="polite">
+        🖊️ Haz click para agregar vértices · Doble click para cerrar el polígono
+      </div>
       <div class="loading-overlay" id="map-loading"><div class="spinner"></div></div>
     </div>
 
