@@ -243,22 +243,24 @@ function handleCompare(event, onCompare) {
   }, 400);
 }
 
-function setupCropTags() {
+function setupCropTags(onCropsChange) {
   byId('crop-grid').addEventListener('click', (event) => {
     const tag = event.target.closest('.crop-tag');
     if (!tag) return;
     toggleCrop(tag.dataset.cropId);
     setState({ crops: getSelectedIds() });
+    if (typeof onCropsChange === 'function') onCropsChange();
   });
 }
 
-function setupSliders() {
+function setupSliders(onPrioritiesChange) {
   for (const criterion of CRITERIA) {
     const slider = byId(`pr-${criterion.key}`);
     const value = byId(`sv-${criterion.key}`);
     slider.addEventListener('input', () => {
       value.textContent = slider.value;
       setState({ priorities: { ...getState().priorities, [criterion.key]: Number(slider.value) } });
+      if (typeof onPrioritiesChange === 'function') onPrioritiesChange();
     });
   }
 }
@@ -277,7 +279,7 @@ function setupPeriodButtons(chart) {
   });
 }
 
-export function initForms({ chart, onCompare, onLocationChange }) {
+export function initForms({ chart, onCompare, onLocationChange, onCropsChange, onPrioritiesChange }) {
   const inLat = byId('in-lat');
   const inLon = byId('in-lon');
   const inComunidad = byId('in-comunidad');
@@ -334,8 +336,8 @@ export function initForms({ chart, onCompare, onLocationChange }) {
   if (btnGuardar) btnGuardar.addEventListener('click', handleSaveSoil);
   if (btnComparar) btnComparar.addEventListener('click', (event) => handleCompare(event, onCompare));
 
-  setupCropTags();
-  setupSliders();
+  setupCropTags(onCropsChange);
+  setupSliders(onPrioritiesChange);
   setupPeriodButtons(chart);
 
   return { requestClimate };

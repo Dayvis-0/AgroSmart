@@ -132,14 +132,25 @@ function criteriaHtml(scores) {
   );
 }
 
-export function renderRotations(container, ranked) {
-  container.innerHTML = ranked
-    .map((rotation) => {
-      const pct = rotation.wscore;
-      const color = barColor(pct);
-      const bestBadge = rotation.rank === 0 ? '<span class="best-badge">⭐ Mejor opción</span>' : '';
+export function renderRotations(container, ranked, { message = '' } = {}) {
+  const messageHtml = message
+    ? `<div class="chart-note" style="margin:0 0 10px 0;">ℹ️ ${message}</div>`
+    : '';
 
-      return `
+  if (!ranked.length) {
+    container.innerHTML = `${messageHtml}<div class="chart-note" style="margin:0;">Seleccione los cultivos necesarios para habilitar al menos una rotación compatible.</div>`;
+    return;
+  }
+
+  container.innerHTML =
+    messageHtml +
+    ranked
+      .map((rotation) => {
+        const pct = rotation.wscore;
+        const color = barColor(pct);
+        const bestBadge = rotation.rank === 0 ? '<span class="best-badge">⭐ Mejor opción</span>' : '';
+
+        return `
       <div class="rotation-card ${rotation.class}" style="animation: fadeIn 0.4s ease ${rotation.rank * 0.1}s both">
         <div class="rot-header">
           <div>
@@ -154,6 +165,6 @@ export function renderRotations(container, ranked) {
         <div class="crit-row">${criteriaHtml(rotation.scores)}</div>
         <div class="rot-notes">${notesHtml(rotation.notas)}</div>
       </div>`;
-    })
-    .join('');
+      })
+      .join('');
 }

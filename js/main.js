@@ -57,6 +57,12 @@ async function loadData() {
   return data;
 }
 
+const ROTATION_CROPS = {
+  A: ['papa', 'quinua', 'haba'],
+  B: ['maiz', 'papa', 'avena', 'haba'],
+  C: ['papa', 'maiz']
+};
+
 function buildAlerts(waterDeficit) {
   const alerts = [...baseAlerts];
   const first = waterDeficit ?? defaultAlert;
@@ -64,18 +70,38 @@ function buildAlerts(waterDeficit) {
   return alerts;
 }
 
+function getApplicableRotations() {
+  const selected = new Set(getState().crops || []);
+  return rotations.filter((rotation) => {
+    const required = ROTATION_CROPS[rotation.id] || [];
+    return required.every((cropId) => selected.has(cropId));
+  });
+}
+
 function getRankedRotations() {
   const { priorities } = getState();
   const weights = normalizeWeights(CRITERIA.map((criterion) => priorities[criterion.key]));
-  return rankRotations(rotations, weights);
+  return rankRotations(getApplicableRotations(), weights);
 }
 
-function handleCompareRotations() {
+function getRotationMessage(ranked, applicableCount) {
+  if (applicableCount === 0) {
+    return 'No hay rotaciones viables con los cultivos seleccionados. Seleccione los cultivos necesarios para al menos una rotación (p. ej. Papa, Quinua y Haba).';
+  }
+  if (applicableCount < rotations.length) {
+    const excluded = rotations.length - applicableCount;
+    return `Mostrando ${applicableCount} rotación(es) compatible(s) con los cultivos seleccionados. ${excluded} no aplica(n) por cultivos faltantes.`;
+  }
+  return '';
+}
+
+function renderComparison({ scroll = false } = {}) {
+  const applicable = getApplicableRotations();
   const ranked = getRankedRotations();
   const alerts = buildAlerts(getState().climate?.waterDeficit);
   const state = getState();
+  const message = getRotationMessage(ranked, applicable.length);
 
-  // 1. Mostrar resultados y alertas en la interfaz
   const rotContainer = byId('rotaciones-container');
   const alertsContainer = byId('alerts-container');
   const cardResultados = byId('card-resultados');
@@ -83,7 +109,7 @@ function handleCompareRotations() {
 
   if (rotContainer && cardResultados) {
     cardResultados.style.display = 'block';
-    renderRotations(rotContainer, ranked);
+    renderRotations(rotContainer, ranked, { message });
   }
 
   if (alertsContainer && cardAlertas) {
@@ -91,7 +117,6 @@ function handleCompareRotations() {
     renderAlerts(alertsContainer, alerts);
   }
 
-  // 2. Generar el PDF con diseño profesional en memoria
   try {
     currentPdfDoc = buildComparisonPdf({
       rankedRotations: ranked,
@@ -105,20 +130,27 @@ function handleCompareRotations() {
     console.error('Error al generar el PDF de rotaciones:', error);
   }
 
-  // 3. Hacer visible el botón de descarga de PDF
   const btnDescargar = byId('btn-descargar-pdf');
   const btnDescargarCard = byId('btn-descargar-pdf-card');
-  if (btnDescargar) {
-    btnDescargar.style.display = 'inline-flex';
-  }
-  if (btnDescargarCard) {
-    btnDescargarCard.style.display = 'inline-flex';
-  }
+  if (btnDescargar) btnDescargar.style.display = 'inline-flex';
+  if (btnDescargarCard) btnDescargarCard.style.display = 'inline-flex';
 
-  // 4. Desplazamiento suave hacia la sección de resultados
-  if (cardResultados) {
+  if (scroll && cardResultados) {
     cardResultados.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+}
+
+function handleCompareRotations() {
+  renderComparison({ scroll: true });
+}
+
+function isComparisonVisible() {
+  const cardResultados = byId('card-resultados');
+  return Boolean(cardResultados && cardResultados.style.display !== 'none');
+}
+
+function refreshComparisonIfVisible() {
+  if (isComparisonVisible()) renderComparison({ scroll: false });
 }
 
 function setupDownloadButtons() {
@@ -266,7 +298,13 @@ async function bootstrap() {
   });
 
   setupDownloadButtons();
-  const forms = initForms({ chart: climateChart, onCompare: handleCompareRotations, onLocationChange: invalidateClimate });
+  const forms = initForms({
+    chart: climateChart,
+    onCompare: handleCompareRotations,
+    onLocationChange: invalidateClimate,
+    onCropsChange: refreshComparisonIfVisible,
+    onPrioritiesChange: refreshComparisonIfVisible
+  });
   requestClimate = forms?.requestClimate ?? null;
 }
 
