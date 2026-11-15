@@ -16,6 +16,24 @@ let baseAlerts = [];
 let defaultAlert = null;
 let currentPdfDoc = null;
 let requestClimate = null;
+let climateChart = null;
+
+function invalidateClimate() {
+  if (climateChart && typeof climateChart.clear === 'function') {
+    climateChart.clear();
+  }
+  setState({
+    climate: {
+      status: 'stale',
+      source: null,
+      series: null,
+      summary: null,
+      meta: null,
+      waterDeficit: null,
+      error: null
+    }
+  });
+}
 
 async function loadJson(path) {
   const response = await fetch(path);
@@ -152,9 +170,7 @@ function handlePolygonComplete({ lat, lng, latlngs, ha }) {
     }
   });
 
-  if (typeof requestClimate === 'function') {
-    requestClimate({ lat, lon: lng });
-  }
+  invalidateClimate();
 }
 
 function handleMapPick(lat, lon) {
@@ -180,6 +196,7 @@ function handleMapPick(lat, lon) {
 
   setMarker(lat, lon, { district, community, openPopup: true });
   setState({ parcel: { ...getState().parcel, lat, lon, district, community } });
+  invalidateClimate();
 }
 
 async function bootstrap() {
@@ -217,9 +234,9 @@ async function bootstrap() {
   startClock();
   writeSoilForm(getState().soil);
 
-  const chart = createClimateChart('clima-chart');
+  climateChart = createClimateChart('clima-chart');
   const { period, climate } = getState();
-  if (climate.series?.[period]) chart.update(climate.series[period]);
+  if (climate.series?.[period]) climateChart.update(climate.series[period]);
   if (climate.summary) renderClimateCards(climate.summary, climate.meta);
   renderClimateStatus(climate.status || 'idle', climate);
 
@@ -234,15 +251,22 @@ async function bootstrap() {
       renderClimateStatus('loading', next);
       return;
     }
+    if (next.status === 'stale') {
+      if (climateChart) climateChart.clear();
+      renderClimateCards(null);
+      renderClimateStatus('stale', next);
+      return;
+    }
     if (next.status === 'ready' || next.status === 'error') {
       if (next.summary) renderClimateCards(next.summary, next.meta);
-      if (next.series?.[state.period]) chart.update(next.series[state.period]);
+      else renderClimateCards(null);
+      if (next.series?.[state.period] && climateChart) climateChart.update(next.series[state.period]);
       renderClimateStatus(next.status, next);
     }
   });
 
   setupDownloadButtons();
-  const forms = initForms({ chart, onCompare: handleCompareRotations });
+  const forms = initForms({ chart: climateChart, onCompare: handleCompareRotations, onLocationChange: invalidateClimate });
   requestClimate = forms?.requestClimate ?? null;
 }
 

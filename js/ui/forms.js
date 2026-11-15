@@ -44,13 +44,14 @@ function syncParcelState() {
   return parcel;
 }
 
-function syncMarkerFromInputs() {
+function syncMarkerFromInputs({ invalidate = false, onLocationChange = null } = {}) {
   const { lat, lon } = readCoordinates();
   if (isNaN(lat) || isNaN(lon)) return;
   const district = selectedDistrict();
   const community = selectedCommunity();
   syncParcelState();
   setMarker(lat, lon, { district, community });
+  if (invalidate && typeof onLocationChange === 'function') onLocationChange();
 }
 
 function isInlineParcelPanel(panel) {
@@ -93,11 +94,12 @@ function toggleParcelPanel() {
   setParcelPanelOpen(!panel.classList.contains('is-open'));
 }
 
-function applyDistrictPreset() {
+function applyDistrictPreset(onLocationChange) {
   const district = selectedDistrict();
   const preset = DISTRICT_COORDS[district];
   if (!preset) {
     syncParcelState();
+    if (typeof onLocationChange === 'function') onLocationChange();
     return;
   }
   const community = selectedCommunity();
@@ -105,9 +107,10 @@ function applyDistrictPreset() {
   byId('in-lon').value = preset.lon.toFixed(4);
   syncParcelState();
   setMarker(preset.lat, preset.lon, { district, community, zoom: 12 });
+  if (typeof onLocationChange === 'function') onLocationChange();
 }
 
-async function handleLocate() {
+async function handleLocate(onLocationChange) {
   showOverlay('map-loading');
   try {
     const { lat, lon, accuracy } = await locateUser();
@@ -123,13 +126,14 @@ async function handleLocate() {
       openPopup: true,
       popupHtml: `<b>🎯 Tu ubicación detectada</b><br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}<br><small>${place ? `${place} · ` : ''}Precisión GPS: ~${Math.round(accuracy)} m</small>`
     });
+    if (typeof onLocationChange === 'function') onLocationChange();
   } catch (error) {
     hideOverlay('map-loading');
     alertMessage(error.message);
   }
 }
 
-async function handleSearchLocation() {
+async function handleSearchLocation(onLocationChange) {
   const district = selectedDistrict();
   const community = selectedCommunity();
   const preset = DISTRICT_COORDS[district];
@@ -171,12 +175,14 @@ async function handleSearchLocation() {
       openPopup: true,
       popupHtml: `<b>📍 Ubicación seleccionada</b><br>Lat: ${Number(lat).toFixed(4)}<br>Lon: ${Number(lon).toFixed(4)}<br><small>${place || district || 'Andahuaylas, Apurímac'}${foundByGeocode ? '' : ' · aproximada por distrito'}</small>`
     });
+    if (typeof onLocationChange === 'function') onLocationChange();
   } catch (error) {
     if (preset) {
       byId('in-lat').value = preset.lat.toFixed(4);
       byId('in-lon').value = preset.lon.toFixed(4);
       syncParcelState();
       setMarker(preset.lat, preset.lon, { district, community, zoom: 12, openPopup: true });
+      if (typeof onLocationChange === 'function') onLocationChange();
       alertMessage('No se pudo ubicar la comunidad con precisión. Se usó la ubicación aproximada del distrito.');
     } else {
       alertMessage(error.message || 'No se pudo buscar la ubicación.');
@@ -271,7 +277,7 @@ function setupPeriodButtons(chart) {
   });
 }
 
-export function initForms({ chart, onCompare }) {
+export function initForms({ chart, onCompare, onLocationChange }) {
   const inLat = byId('in-lat');
   const inLon = byId('in-lon');
   const inComunidad = byId('in-comunidad');
@@ -284,13 +290,12 @@ export function initForms({ chart, onCompare }) {
   const btnGuardar = byId('btn-guardar');
   const btnComparar = byId('btn-comparar');
 
-  if (inLat) inLat.addEventListener('change', syncMarkerFromInputs);
-  if (inLon) inLon.addEventListener('change', syncMarkerFromInputs);
+  if (inLat) inLat.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
+  if (inLon) inLon.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
   if (inComunidad) {
-    inComunidad.addEventListener('input', syncMarkerFromInputs);
-    inComunidad.addEventListener('change', syncMarkerFromInputs);
+    inComunidad.addEventListener('change', () => syncMarkerFromInputs({ invalidate: true, onLocationChange }));
   }
-  if (selDistrito) selDistrito.addEventListener('change', applyDistrictPreset);
+  if (selDistrito) selDistrito.addEventListener('change', () => applyDistrictPreset(onLocationChange));
 
   if (toggleBtn) {
     toggleBtn.addEventListener('click', (event) => {
@@ -321,8 +326,8 @@ export function initForms({ chart, onCompare }) {
     }
   });
 
-  if (btnBuscarUbicacion) btnBuscarUbicacion.addEventListener('click', handleSearchLocation);
-  document.addEventListener(LOCATE_EVENT, handleLocate);
+  if (btnBuscarUbicacion) btnBuscarUbicacion.addEventListener('click', () => handleSearchLocation(onLocationChange));
+  document.addEventListener(LOCATE_EVENT, () => handleLocate(onLocationChange));
   const btnDelimitar = byId('btn-delimitar-parcela');
   if (btnDelimitar) btnDelimitar.addEventListener('click', () => startParcelDrawing());
   if (btnConsultar) btnConsultar.addEventListener('click', handleClimateQuery);

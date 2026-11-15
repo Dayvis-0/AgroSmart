@@ -18,8 +18,38 @@ export function startClock() {
   setInterval(tick, 1000);
 }
 
+function setClimateVisibility(visible) {
+  const grid = document.querySelector('.climate-grid');
+  const chartWrapper = document.querySelector('.chart-wrapper');
+  const periodBtns = document.querySelector('.period-btns');
+  const note = document.getElementById('climate-note');
+  const display = visible ? '' : 'none';
+  if (grid) grid.style.display = display;
+  if (chartWrapper) chartWrapper.style.display = display;
+  if (periodBtns) periodBtns.style.display = display;
+  if (note) note.style.display = display;
+}
+
 export function renderClimateCards(summary, meta = null) {
-  if (!summary) return;
+  const visible = Boolean(summary);
+  setClimateVisibility(visible);
+  if (!summary) {
+    const tempAct = document.getElementById('cc-temp-act');
+    const tempMedia = document.getElementById('cc-temp');
+    if (tempAct) tempAct.textContent = '—';
+    if (tempMedia) tempMedia.textContent = '—';
+    const prec = document.getElementById('cc-prec');
+    const viento = document.getElementById('cc-viento');
+    const rad = document.getElementById('cc-rad');
+    if (prec) prec.textContent = '—';
+    if (viento) viento.textContent = '—';
+    if (rad) rad.textContent = '—';
+    document.querySelectorAll('[data-climate-src]').forEach((node) => {
+      node.textContent = `${node.dataset.climateSrc} · —`;
+    });
+    return;
+  }
+
   const tempAct = document.getElementById('cc-temp-act');
   if (tempAct) {
     tempAct.textContent = (summary.tempCurrent ?? summary.temp).toFixed(1);
@@ -46,11 +76,21 @@ export function renderClimateStatus(status, climate) {
   if (!node || !note) return;
 
   if (status === 'loading') {
+    setClimateVisibility(false);
     node.textContent = '⏳ Consultando NASA POWER…';
+    note.textContent = '';
+    return;
+  }
+
+  if (status === 'stale') {
+    setClimateVisibility(false);
+    node.textContent = '📍 Ubicación cambiada. Presione “Consultar clima” para ver indicadores y tendencias de la nueva ubicación.';
+    note.textContent = '';
     return;
   }
 
   if (status === 'ready') {
+    setClimateVisibility(true);
     const provider = climate.meta?.provider ?? 'NASA POWER';
     const period = climate.meta?.period?.start
       ? `${String(climate.meta.period.start).slice(0, 4)}–${String(climate.meta.period.end).slice(0, 4)}`
@@ -59,15 +99,20 @@ export function renderClimateStatus(status, climate) {
     note.textContent =
       climate.source === 'demo'
         ? '⚠️ Mostrando datos de demostración. NASA POWER ofrece estimaciones con resolución ~50 km y no reemplaza una estación meteorológica local.'
-        : '⚠️ Fuente: NASA POWER API · Resolución ~50 km · Estimaciones satelitales/modeladas, no una estación meteorológica local.';
+        : '⚠️ Fuente: NASA POWER API · Resolución ~50 km · Estimaciones satelitales/modeladas, no una estación meteorológica local (centroide consultado).';
     return;
   }
 
   if (status === 'error') {
+    const hasData = Boolean(climate.summary);
+    setClimateVisibility(hasData);
     const reason = climate.error?.message ?? 'Error desconocido.';
-    node.textContent = `❌ No se pudo consultar NASA POWER: ${reason} Se muestran datos de demostración.`;
-    note.textContent =
-      '⚠️ Fallback activo: datos de demostración. Verifique la conexión e intente consultar nuevamente.';
+    node.textContent = hasData
+      ? `❌ No se pudo consultar NASA POWER: ${reason} Se muestran datos de demostración.`
+      : `❌ No se pudo consultar NASA POWER: ${reason} Presione “Consultar clima” para intentar nuevamente.`;
+    note.textContent = hasData
+      ? '⚠️ Fallback activo: datos de demostración. Verifique la conexión e intente consultar nuevamente.'
+      : '';
   }
 }
 

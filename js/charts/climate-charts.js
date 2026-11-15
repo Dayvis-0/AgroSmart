@@ -86,11 +86,15 @@ export function createClimateChart(canvasId) {
     chart = new Chart(canvas.getContext('2d'), buildConfig(series));
   }
 
-  function destroy() {
+  function clear() {
     if (!chart) return;
     chart.destroy();
     chart = null;
   }
 
-  return { update, destroy };
+  function destroy() {
+    clear();
+  }
+
+  return { update, clear, destroy };
 }
