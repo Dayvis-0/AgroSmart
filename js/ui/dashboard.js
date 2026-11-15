@@ -64,7 +64,7 @@ export function renderClimateCards(summary, meta = null) {
 
   const year = meta?.year ?? (meta?.period?.end ? String(meta.period.end).slice(0, 4) : '2026');
   const isDemo = meta?.provider === 'Datos de demostración' || meta?.provider === 'Demo';
-  const provider = isDemo ? 'Ejemplo' : 'Estimación de zona';
+  const provider = isDemo ? 'Ejemplo (no satélite)' : 'Estimación satelital de zona';
   document.querySelectorAll('[data-climate-src]').forEach((node) => {
     const parameter = node.dataset.climateSrc;
     node.textContent = `${parameter} · ${year} · ${provider}`;
@@ -175,17 +175,29 @@ function criteriaHtml(scores) {
   );
 }
 
+function summaryHtml(resumen) {
+  if (!resumen || typeof resumen !== 'object') return '';
+  const mejora = resumen.mejora ? `<div class="rot-summary-item"><strong>${resumen.mejora}</strong></div>` : '';
+  const costo = resumen.costo ? `<div class="rot-summary-item">${resumen.costo}</div>` : '';
+  const riesgo = resumen.riesgo ? `<div class="rot-summary-item">${resumen.riesgo}</div>` : '';
+  if (!mejora && !costo && !riesgo) return '';
+  return `<div class="rot-summary" aria-label="Resumen en lenguaje sencillo">${mejora}${costo}${riesgo}</div>`;
+}
+
 export function renderRotations(container, ranked, { message = '' } = {}) {
+  const reminderHtml =
+    '<div class="chart-note" style="margin:0 0 10px 0;">ℹ️ Esta herramienta te apoya para decidir, pero no reemplaza tu experiencia en la parcela ni el consejo de un especialista.</div>';
   const messageHtml = message
     ? `<div class="chart-note" style="margin:0 0 10px 0;">ℹ️ ${message}</div>`
     : '';
 
   if (!ranked.length) {
-    container.innerHTML = `${messageHtml}<div class="chart-note" style="margin:0;">Seleccione los cultivos necesarios para habilitar al menos una rotación compatible.</div>`;
+    container.innerHTML = `${reminderHtml}${messageHtml}<div class="chart-note" style="margin:0;">Seleccione los cultivos necesarios para habilitar al menos una rotación compatible.</div>`;
     return;
   }
 
   container.innerHTML =
+    reminderHtml +
     messageHtml +
     ranked
       .map((rotation) => {
@@ -211,6 +223,7 @@ export function renderRotations(container, ranked, { message = '' } = {}) {
           </div>
           <div class="rot-score-label" style="color:${color}">${pctText}<small>${scored ? '/100' : ''}</small></div>
         </div>
+        ${summaryHtml(rotation.resumen)}
         <div class="score-bar-wrap">
           <div class="score-bar" style="width:${pct}%;background:${color}"></div>
         </div>

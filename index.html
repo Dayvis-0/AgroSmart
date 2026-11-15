@@ -89,9 +89,9 @@
     <div class="card">
       <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
         <span>🏔️ Paso 2: Indica cómo es tu suelo y tu agua</span>
-        <span id="soil-mode-badge" class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Modo Agricultor</span>
+        <span id="soil-mode-badge" class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Dato local</span>
       </div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline">Elige la opción que más se parezca a tu parcela. Si tienes análisis de laboratorio, puedes usar el modo Agrónomo.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Estos son <strong>datos locales de tu parcela</strong> (los ingresas tú). No vienen de satélite. Elige la opción que más se parezca a tu parcela o usa el modo Agrónomo si tienes análisis.</div>
 
       <!-- Switch de Perfil -->
       <div style="display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 3px; margin: 8px 0 12px 0; gap: 4px;">
@@ -120,7 +120,7 @@
         </div>
 
         <div style="margin-top: 12px; padding: 8px 10px; background: rgba(0, 255, 136, 0.05); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: var(--radius-sm); font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
-          ✅ <strong style="color: var(--accent-green);">Usando una estimación de suelo</strong> común de la zona para ayudarte a empezar. No reemplaza un análisis de laboratorio, pero sirve como guía inicial.
+          ✅ <strong style="color: var(--accent-green);">Dato local (estimación inicial):</strong> usas una referencia común de la zona para empezar. No es un satélite ni un análisis de laboratorio, pero sirve como guía.
         </div>
       </div>
 
@@ -229,7 +229,7 @@
       </div>
       <div id="regional-context-status" class="chart-note" style="margin-top:0;margin-bottom:10px; display:none;"></div>
       <button type="button" class="btn btn-primary" id="btn-consultar" style="margin-top:0;margin-bottom:10px;">🌦️ Consultar clima de mi zona</button>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (NASA POWER ~50 km). El contexto regional adicional (p. ej. GPM/SMAP) se muestra con su fuente y resolución cuando está disponible.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;"><strong>Fuente satelital/regional:</strong> NASA POWER (~50 km, estimación de zona, no es estación local). La segunda fuente regional (por ejemplo, lluvia GPM) se muestra con su fuente y resolución cuando está disponible. Tus cultivos, suelo y prioridades son <strong>datos locales</strong> que ingresas tú.</div>
       <div class="climate-grid">
         <div class="climate-card">
           <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura</div>
@@ -280,7 +280,7 @@
     <!-- Cultivos -->
     <div class="card">
       <div class="card-title">🌾 Paso 4: Elige los cultivos que te interesan</div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Toca los cultivos que tienes o quieres probar. Esto ayuda a ver qué rotaciones son posibles.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Toca los cultivos que tienes o quieres probar. Esta selección es un <strong>dato local</strong> de tu decisión y se usa para comparar rotaciones.</div>
       <div class="crop-grid" id="crop-grid"></div>
 
       <!-- Rotación actual -->
@@ -337,6 +337,7 @@
     <!-- Resultados y alertas: se exportan en PDF al comparar -->
     <div class="card" id="card-resultados" style="display:none">
       <div class="card-title">📊 Recomendaciones de rotación</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Las recomendaciones combinan <strong>datos locales</strong> (suelo, cultivos y prioridades que ingresas) con <strong>estimaciones satelitales/regionales</strong> del clima (NASA POWER ~50 km y fuentes regionales cuando están disponibles).</div>
       <div id="rotaciones-container"><!-- se rellena con JS --></div>
     </div>
 
@@ -376,7 +377,7 @@
       viewProd.style.display = 'none';
       viewAgro.style.display = 'block';
       if (badge) {
-        badge.textContent = 'Ficha Técnica';
+        badge.textContent = 'Dato local (avanzado)';
         badge.className = 'source-badge badge-medido';
       }
     } else {
@@ -389,7 +390,7 @@
       viewProd.style.display = 'block';
       viewAgro.style.display = 'none';
       if (badge) {
-        badge.textContent = 'Modo Agricultor';
+        badge.textContent = 'Dato local (sencillo)';
         badge.className = 'source-badge badge-estimado';
       }
     }

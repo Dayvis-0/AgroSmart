@@ -85,6 +85,24 @@
       margin: 0 10px 10px 10px;
     }
 
+    .rot-header {
+      flex-wrap: wrap;
+    }
+    .rot-score-label {
+      width: 100%;
+      text-align: left;
+      font-size: 18px;
+    }
+    .rot-name {
+      line-height: 1.35;
+    }
+    .crit-row {
+      gap: 6px;
+    }
+    .crit-pill {
+      font-size: 10px;
+    }
+
     .disclaimer-bar {
       padding: 6px 10px;
       font-size: 9px;

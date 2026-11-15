@@ -4,6 +4,7 @@ import { buildCurrentRotation, normalizeRotation } from './agriculture/rotation-
 import { generateCandidateRotations } from './agriculture/rotation-generator.js';
 import { deriveRotationInsights } from './agriculture/rotation-insights.js';
 import { computeRotationScores } from './agriculture/scoring-engine.js';
+import { buildRotationSummary } from './agriculture/rotation-summary.js';
 import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
@@ -130,7 +131,15 @@ function withComputedData(rotation, context) {
     soil: context.soil,
     crops: context.crops
   });
-  return { ...rotation, scores, notas };
+  const resumen = buildRotationSummary({
+    sequence: rotation.sequence || [],
+    scores,
+    climate: context.climate,
+    soil: context.soil,
+    crops: context.crops,
+    notas
+  });
+  return { ...rotation, scores, notas, resumen };
 }
 
 function getCurrentRotation(context) {
