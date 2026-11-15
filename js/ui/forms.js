@@ -199,7 +199,7 @@ async function handleSearchLocation(onLocationChange) {
 async function requestClimate(coords = readCoordinates()) {
   const coordinates = { lat: Number(coords.lat), lon: Number(coords.lon) };
   if (!coordinatesAreValid(coordinates)) {
-    alertMessage('Revisá la ubicación: la latitud debe estar entre -90 y 90, y la longitud entre -180 y 180.');
+    alertMessage('Revisa la ubicación: la latitud debe estar entre -90 y 90, y la longitud entre -180 y 180.');
     return;
   }
 

@@ -26,7 +26,7 @@
     <span class="logo-icon">🌱</span>
     <div>
       <div class="logo-text">AGROSMART</div>
-      <div class="logo-sub">Apoyo agrícola para tu chacra</div>
+      <div class="logo-sub">Apoyo agrícola para tu parcela</div>
     </div>
   </div>
 
@@ -49,8 +49,8 @@
 
     <!-- Paso 1: Ubicar parcela -->
     <div class="card parcel-filter-panel-inline" id="parcel-filter-panel" aria-hidden="false">
-      <div class="card-title">📍 Paso 1: Ubicá tu parcela</div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline">Elegí tu distrito y, si sabés, tu comunidad. Esto ayuda a ubicar el mapa y pedir el clima estimado de la zona.</div>
+      <div class="card-title">📍 Paso 1: Ubica tu parcela</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Elige tu distrito y, si lo sabes, tu comunidad. Esto ayuda a ubicar el mapa y consultar el clima estimado de la zona.</div>
 
       <label for="sel-distrito">Distrito</label>
       <select id="sel-distrito">
@@ -78,7 +78,7 @@
           <input type="number" id="in-lon" value="-73.3875" step="0.0001" min="-180" max="180" />
         </div>
       </div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:6px;">Si no sabés las coordenadas, no pasa nada: elegí el distrito y usá “Buscar ubicación”.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:6px;">Si no sabes las coordenadas, no pasa nada: elige el distrito y usa “Buscar ubicación”.</div>
 
       <div class="parcel-filter-actions parcel-filter-actions--inline">
         <button type="button" class="btn btn-secondary" id="btn-buscar-ubicacion" title="Buscar ubicación según distrito y comunidad">🔎 Buscar ubicación en el mapa</button>
@@ -88,10 +88,10 @@
     <!-- Paso 2: Ficha del Suelo -->
     <div class="card">
       <div class="card-title" style="display: flex; align-items: center; justify-content: space-between;">
-        <span>🏔️ Paso 2: Contá cómo es tu suelo y agua</span>
+        <span>🏔️ Paso 2: Indica cómo es tu suelo y tu agua</span>
         <span id="soil-mode-badge" class="source-badge badge-estimado" style="font-size: 9px; padding: 2px 6px;">Modo Agricultor</span>
       </div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline">Elegí la opción que más se parezca a tu chacra. Si tenés análisis de laboratorio, podés usar el modo Agrónomo.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline">Elige la opción que más se parezca a tu parcela. Si tienes análisis de laboratorio, puedes usar el modo Agrónomo.</div>
 
       <!-- Switch de Perfil -->
       <div style="display: flex; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 3px; margin: 8px 0 12px 0; gap: 4px;">
@@ -105,7 +105,7 @@
 
       <!-- VISTA 1: MODO AGRICULTOR (Sencillo / Guiado) -->
       <div id="view-productor">
-        <label>¿Cómo es la tierra de tu chacra?</label>
+        <label>¿Cómo es la tierra de tu parcela?</label>
         <select id="sel-tipo-simple" onchange="applySimpleSoil(this.value)">
           <option value="negra" selected>🌱 Tierra negra / suelta y fértil (guarda bien nutrientes)</option>
           <option value="arenosa">🏜️ Tierra arenosa / cascajosa (se seca rápido)</option>
@@ -127,7 +127,7 @@
       <!-- VISTA 2: MODO AGRÓNOMO (Ficha Técnica Avanzada) -->
       <div id="view-agronomo" style="display: none;">
         <p style="font-size: 10px; color: var(--text-secondary); margin-bottom: 8px;">
-          🔬 Si tenés resultados de laboratorio, ingresalos acá para afinar la recomendación.
+          🔬 Si tienes resultados de laboratorio, ingrésalos aquí para afinar la recomendación.
         </p>
 
         <div class="field-label-row">
@@ -211,12 +211,12 @@
           </button>
         </div>
       </div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Revisá que el punto del mapa esté cerca de tu parcela. Si querés, podés marcar el contorno.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Revisa que el punto del mapa esté cerca de tu parcela. Si quieres, puedes marcar el contorno.</div>
 
       <div id="map"></div>
       <!-- Draw hint banner shown while polygon tool is active -->
       <div class="map-hint-banner" id="map-draw-hint" aria-live="polite">
-        🖊️ Tocá el mapa para marcar los bordes de tu parcela. Cuando termines, tocá “Finalizar”.
+        🖊️ Toca el mapa para marcar los bordes de tu parcela. Cuando termines, toca “Finalizar”.
       </div>
       <div class="loading-overlay" id="map-loading"><div class="spinner"></div></div>
     </div>
@@ -225,10 +225,10 @@
     <div class="card">
       <div class="card-title">🌦️ Paso 3: Clima estimado de tu zona</div>
       <div id="climate-status" class="chart-note" style="margin-top:0;margin-bottom:10px;">
-        ℹ️ Se muestran datos de ejemplo. Cuando estés listo, presioná “Consultar clima de mi zona” para ver una estimación según la ubicación.
+        ℹ️ Se muestran datos de ejemplo. Cuando estés listo, presiona “Consultar clima de mi zona” para ver una estimación según la ubicación.
       </div>
       <button type="button" class="btn btn-primary" id="btn-consultar" style="margin-top:0;margin-bottom:10px;">🌦️ Consultar clima de mi zona</button>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (aprox. 50 km), no mediciones exactas de tu chacra.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (aprox. 50 km), no mediciones exactas de tu parcela.</div>
       <div class="climate-grid">
         <div class="climate-card">
           <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura</div>
@@ -278,15 +278,15 @@
 
     <!-- Cultivos -->
     <div class="card">
-      <div class="card-title">🌾 Paso 4: Elegí los cultivos que te interesan</div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Tocá los cultivos que tenés o querés probar. Esto ayuda a ver qué rotaciones son posibles.</div>
+      <div class="card-title">🌾 Paso 4: Elige los cultivos que te interesan</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Toca los cultivos que tienes o quieres probar. Esto ayuda a ver qué rotaciones son posibles.</div>
       <div class="crop-grid" id="crop-grid"></div>
 
       <!-- Rotación actual -->
       <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-subtle);">
         <label for="cr-slot-0">🔁 Tu rotación actual</label>
         <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:6px;">
-          Contá el orden en que sembrás ahora. Elegí hasta 4 cultivos de los que seleccionaste arriba; dejá los pasos vacíos si tu rotación es más corta.
+          Indica el orden en que siembras ahora. Elige hasta 4 cultivos de los que seleccionaste arriba; deja los pasos vacíos si tu rotación es más corta.
         </div>
         <div id="current-rotation-slots" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px;"></div>
         <button type="button" class="btn btn-secondary" id="btn-fill-current-rotation" style="margin-top:8px; font-size:11px;">✨ Autocompletar con mi selección</button>
@@ -296,8 +296,8 @@
 
     <!-- Prioridades -->
     <div class="card">
-      <div class="card-title">⚖️ ¿Qué es más importante para vos?</div>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Mové cada barra del 1 al 5: <strong>1 = poco importante</strong>, <strong>5 = muy importante</strong>.</div>
+      <div class="card-title">⚖️ ¿Qué es más importante para ti?</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Mueve cada barra del 1 al 5: <strong>1 = poco importante</strong>, <strong>5 = muy importante</strong>.</div>
 
       <div class="slider-row">
         <div class="slider-label">💧 Cuidar el agua</div>
@@ -347,7 +347,7 @@
 </div><!-- /main-grid -->
 
 <div class="disclaimer-bar">
-  ℹ️ Las recomendaciones y el clima son estimaciones para orientar tu decisión. No reemplazan la observación en tu chacra ni el consejo de un especialista agrónomo.
+  ℹ️ Las recomendaciones y el clima son estimaciones para orientar tu decisión. No reemplazan la observación en tu parcela ni el consejo de un especialista agrónomo.
 </div>
 
 <!-- ═══════════ SCRIPTS ═══════════ -->

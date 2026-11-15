@@ -100,8 +100,8 @@ export function renderClimateStatus(status, climate) {
       ? `ℹ️ Estás viendo datos de ejemplo${period ? ` (${period})` : ''}. Te sirven como referencia para probar la herramienta.`
       : `✅ Listo: clima estimado de tu zona${period ? ` (${period})` : ''}. Usalo como guía para tu decisión.`;
     note.textContent = isDemo
-      ? '⚠️ Estos son datos de ejemplo. Para tu ubicación, podés presionar “Consultar clima de mi zona”. La estimación no reemplaza una estación local.'
-      : '⚠️ Es una estimación para la zona (aprox. 50 km). No es lo mismo que medir en tu chacra, pero ayuda a orientarte.';
+      ? '⚠️ Estos son datos de ejemplo. Para tu ubicación, puedes presionar “Consultar clima de mi zona”. La estimación no reemplaza una estación local.'
+      : '⚠️ Es una estimación para la zona (aprox. 50 km). No es lo mismo que medir en tu parcela, pero ayuda a orientarte.';
     return;
   }
 
@@ -111,7 +111,7 @@ export function renderClimateStatus(status, climate) {
     const reason = climate.error?.message ?? 'Hubo un problema.';
     node.textContent = hasData
       ? `❌ No se pudo consultar el clima ahora (${reason}). Te mostramos datos de ejemplo para que puedas seguir.`
-      : `❌ No se pudo consultar el clima ahora (${reason}). Revisá tu conexión y probá de nuevo con “Consultar clima de mi zona”.`;
+      : `❌ No se pudo consultar el clima ahora (${reason}). Revisa tu conexión e inténtalo de nuevo con “Consultar clima de mi zona”.`;
     note.textContent = hasData
       ? '⚠️ Mientras tanto, los datos que ves son de ejemplo. Podés intentar consultar otra vez.'
       : 'Cuando se conecte, vas a poder ver la estimación de tu zona.';

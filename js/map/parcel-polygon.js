@@ -335,8 +335,8 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
     map.getContainer().style.cursor = 'crosshair';
     updateHint(
       hadPrevious
-        ? '🖊️ Se quitó la parcela anterior. Tocá el mapa para marcar la nueva. Si no querés cambiarla, tocá “Cancelar”.'
-        : '🖊️ Tocá el mapa para marcar los bordes de tu parcela.',
+        ? '🖊️ Se quitó la parcela anterior. Toca el mapa para marcar la nueva. Si no quieres cambiarla, toca “Cancelar”.'
+        : '🖊️ Toca el mapa para marcar los bordes de tu parcela.',
       false
     );
   };
@@ -371,10 +371,10 @@ export function initParcelPolygon(map, { onPolygonComplete, initialPlace = 'Anda
 
     const n = drawPoints.length;
     if (n >= 3) {
-      updateHint(`📍 ${n} puntos marcados · Cuando termines, tocá “Finalizar” para cerrar la parcela.`, true);
+      updateHint(`📍 ${n} puntos marcados · Cuando termines, toca “Finalizar” para cerrar la parcela.`, true);
     } else {
       const faltan = 3 - n;
-      updateHint(`📍 ${n} punto${n > 1 ? 's' : ''} marcado${n > 1 ? 's' : ''} · Marcá ${faltan} más para poder cerrarla.`, false);
+      updateHint(`📍 ${n} punto${n > 1 ? 's' : ''} marcado${n > 1 ? 's' : ''} · Marca ${faltan} más para poder cerrarla.`, false);
     }
   });
 
