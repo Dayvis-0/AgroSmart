@@ -6,7 +6,10 @@
     "family": "Solanaceae",
     "cycle": "90–120 días",
     "waterDemand": "media",
-    "soilNote": "Prefiere suelos francos, bien drenados y pH 5.5–6.5"
+    "soilNote": "Prefiere suelos francos, bien drenados y pH 5.5–6.5",
+    "tempMinC": 8,
+    "tempMaxC": 20,
+    "waterNeedMmMonth": 90
   },
   {
     "id": "maiz",
@@ -15,7 +18,10 @@
     "family": "Poaceae",
     "cycle": "120–180 días",
     "waterDemand": "alta",
-    "soilNote": "Requiere suelos profundos y alta disponibilidad de agua en verano"
+    "soilNote": "Requiere suelos profundos y alta disponibilidad de agua en verano",
+    "tempMinC": 14,
+    "tempMaxC": 28,
+    "waterNeedMmMonth": 120
   },
   {
     "id": "quinua",
@@ -24,7 +30,10 @@
     "family": "Amaranthaceae",
     "cycle": "150–180 días",
     "waterDemand": "baja",
-    "soilNote": "Tolera suelos pobres y sequía; sensible al exceso de humedad"
+    "soilNote": "Tolera suelos pobres y sequía; sensible al exceso de humedad",
+    "tempMinC": 4,
+    "tempMaxC": 22,
+    "waterNeedMmMonth": 45
   },
   {
     "id": "haba",
@@ -33,7 +42,10 @@
     "family": "Fabaceae",
     "cycle": "120–150 días",
     "waterDemand": "media",
-    "soilNote": "Leguminosa que fija nitrógeno; prefiere suelos francos y frescos"
+    "soilNote": "Leguminosa que fija nitrógeno; prefiere suelos francos y frescos",
+    "tempMinC": 6,
+    "tempMaxC": 22,
+    "waterNeedMmMonth": 70
   },
   {
     "id": "avena",
@@ -42,7 +54,10 @@
     "family": "Poaceae",
     "cycle": "100–130 días",
     "waterDemand": "media",
-    "soilNote": "Cultivo de cobertura que protege el suelo entre campañas"
+    "soilNote": "Cultivo de cobertura que protege el suelo entre campañas",
+    "tempMinC": 5,
+    "tempMaxC": 20,
+    "waterNeedMmMonth": 65
   },
   {
     "id": "cebolla",
@@ -51,6 +66,9 @@
     "family": "Amaryllidaceae",
     "cycle": "120–150 días",
     "waterDemand": "alta",
-    "soilNote": "Exige riego frecuente y suelos sueltos con buen drenaje"
+    "soilNote": "Exige riego frecuente y suelos sueltos con buen drenaje",
+    "tempMinC": 12,
+    "tempMaxC": 24,
+    "waterNeedMmMonth": 110
   }
 ]

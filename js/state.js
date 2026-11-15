@@ -30,6 +30,19 @@ const state = {
     waterDeficit: null,
     error: null
   },
+  // Second NASA source (regional context, e.g. GPM/SMAP): labeled status only,
+  // never faked. Not persisted.
+  regionalContext: {
+    status: 'idle',
+    source: null,
+    product: null,
+    resolution: null,
+    label: null,
+    coverage: null,
+    reason: null,
+    point: null,
+    checkedAt: null
+  },
   alerts: [],
   period: '1a'
 };
@@ -49,6 +62,7 @@ export function setState(patch, options = {}) {
     crops: [...state.crops],
     currentRotation: state.currentRotation ? [...state.currentRotation] : null,
     climate: { ...state.climate },
+    regionalContext: { ...state.regionalContext },
     alerts: [...state.alerts]
   };
   Object.assign(state, patch);

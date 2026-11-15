@@ -1,13 +1,15 @@
 import { renderCrops } from './agriculture/crop-catalog.js';
 import { CRITERIA, normalizeWeights, rankRotations } from './agriculture/rotation-engine.js';
 import { buildCurrentRotation, normalizeRotation } from './agriculture/rotation-model.js';
+import { computeRotationScores } from './agriculture/scoring-engine.js';
 import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
 import { initMap, setMarker } from './map/map-controller.js';
 import { buildComparisonPdf, downloadPdf } from './reports/pdf-report.js';
+import { fetchRegionalContext } from './api/regional-context.js';
 import { getState, setState, subscribe, resetState, hasPersistedState } from './state.js';
-import { renderClimateCards, renderClimateStatus, renderRotations, startClock } from './ui/dashboard.js';
+import { renderClimateCards, renderClimateStatus, renderRegionalContext, renderRotations, startClock } from './ui/dashboard.js';
 import { initForms, syncControlsFromState } from './ui/forms.js';
 
 const byId = (id) => document.getElementById(id);
@@ -49,6 +51,17 @@ function invalidateClimate() {
       meta: null,
       waterDeficit: null,
       error: null
+    },
+    regionalContext: {
+      status: 'idle',
+      source: null,
+      product: null,
+      resolution: null,
+      label: null,
+      coverage: null,
+      reason: null,
+      point: null,
+      checkedAt: null
     }
   });
 }
@@ -82,20 +95,56 @@ function buildAlerts(waterDeficit) {
   return alerts;
 }
 
-function getCurrentRotation() {
-  const ids = getState().currentRotation;
-  if (!Array.isArray(ids) || ids.length < 2) return null;
-  return buildCurrentRotation(ids, { cropCatalog });
+function isClimateComputable(climate) {
+  if (!climate || (climate.status !== 'ready' && climate.status !== 'error')) return false;
+  if (!climate.series && !Array.isArray(climate.monthlyPrecMm)) return false;
+  const period = climate.series?.['1a'] || climate.series?.['6m'] || climate.series?.['2a'];
+  return Boolean(period?.prec?.length || period?.temp?.length || climate.summary);
 }
 
-function getApplicableRotations() {
+function shouldUseComputedScores(climate) {
+  // Live/computed path: compute from climate + soil + crops + priorities when
+  // usable climate context exists. Demo data is only a labeled fallback when
+  // no computable climate is available.
+  return isClimateComputable(climate);
+}
+
+function withComputedScores(rotation, context) {
+  if (!rotation || rotation.scores || !context) return rotation;
+  const scores = computeRotationScores({
+    sequence: rotation.sequence || [],
+    climate: context.climate,
+    soil: context.soil,
+    crops: context.crops
+  });
+  return { ...rotation, scores };
+}
+
+function getCurrentRotation(context) {
+  const ids = getState().currentRotation;
+  if (!Array.isArray(ids) || ids.length < 2) return null;
+  const rotation = buildCurrentRotation(ids, { cropCatalog });
+  return context?.compute ? withComputedScores(rotation, context) : rotation;
+}
+
+function getApplicableRotations(context) {
   const selected = new Set(getState().crops || []);
-  const applicable = rotations.filter(
+  const base = rotations.filter(
     (rotation) =>
       rotation.sequence.length > 0 &&
       rotation.sequence.every((cropId) => selected.has(cropId))
   );
-  const currentRotation = getCurrentRotation();
+
+  const applicable = context?.compute
+    ? base.map((rotation) => ({ ...rotation, scores: computeRotationScores({
+        sequence: rotation.sequence || [],
+        climate: context.climate,
+        soil: context.soil,
+        crops: context.crops
+      }) }))
+    : base;
+
+  const currentRotation = getCurrentRotation(context);
   if (currentRotation && currentRotation.sequence.every((cropId) => selected.has(cropId))) {
     applicable.push(currentRotation);
   }
@@ -103,9 +152,16 @@ function getApplicableRotations() {
 }
 
 function getRankedRotations() {
-  const { priorities } = getState();
-  const weights = normalizeWeights(CRITERIA.map((criterion) => priorities[criterion.key]));
-  return rankRotations(getApplicableRotations(), weights);
+  const state = getState();
+  const weights = normalizeWeights(CRITERIA.map((criterion) => state.priorities[criterion.key]));
+  const compute = shouldUseComputedScores(state.climate);
+  const context = {
+    compute,
+    climate: state.climate,
+    soil: state.soil,
+    crops: cropCatalog
+  };
+  return rankRotations(getApplicableRotations(context), weights);
 }
 
 function getRotationMessage(ranked, applicableCount) {
@@ -310,13 +366,27 @@ async function bootstrap() {
         meta: { provider: 'Datos de demostración', year: 2024 },
         waterDeficit: demo.alerts?.find((alert) => alert.title === 'Déficit hídrico estacional') ?? null,
         error: null
+      },
+      regionalContext: {
+        status: 'unavailable',
+        source: 'NASA GPM IMERG (GES DISC)',
+        product: 'GPM IMERG V07 Monthly (precipitation, regional)',
+        resolution: '~10 km (producto); agregado al punto de la parcela',
+        label: 'Contexto regional NASA GPM no consultado (modo demostración)',
+        coverage: 'sin verificación',
+        reason: 'demo-fallback',
+        point: { lat: parcel.lat, lon: parcel.lon },
+        checkedAt: new Date().toISOString()
       }
     });
   } else {
     setState({ parcel, soil });
   }
 
-  // Demo rotations are an offline fallback only; Phase 1 computes real scores.
+  // Demo rotations are an offline/labeled fallback only. In the live/computed
+  // path scores are computed from NASA climate + soil + crops + priorities;
+  // stored demo scores are kept only for fallback rendering when no computable
+  // climate context is available.
   rotations = (demo?.rotations ?? []).map((raw) => normalizeRotation(raw, cropCatalog));
   const alerts = demo?.alerts ?? [];
   defaultAlert = alerts.find((alert) => alert.title === 'Déficit hídrico estacional') ?? null;
@@ -326,33 +396,76 @@ async function bootstrap() {
   writeSoilForm(getState().soil);
 
   climateChart = createClimateChart('clima-chart');
-  const { period, climate } = getState();
+  const { period, climate, regionalContext } = getState();
   if (climate.series?.[period]) climateChart.update(climate.series[period]);
   if (climate.summary) renderClimateCards(climate.summary, climate.meta);
   renderClimateStatus(climate.status || 'idle', climate);
+  renderRegionalContext(regionalContext);
 
   if (crops) renderCrops(byId('crop-grid'), crops, getState().crops);
 
   initMap({ onPick: handleMapPick, onPolygonComplete: handlePolygonComplete });
 
   subscribe((state, previous) => {
-    if (state.climate === previous.climate) return;
-    const { climate: next } = state;
-    if (next.status === 'loading') {
-      renderClimateStatus('loading', next);
-      return;
+    if (state.climate !== previous.climate) {
+      const { climate: next } = state;
+      if (next.status === 'loading') {
+        renderClimateStatus('loading', next);
+      } else if (next.status === 'stale') {
+        if (climateChart) climateChart.clear();
+        renderClimateCards(null);
+        renderClimateStatus('stale', next);
+      } else if (next.status === 'ready' || next.status === 'error') {
+        if (next.summary) renderClimateCards(next.summary, next.meta);
+        else renderClimateCards(null);
+        if (next.series?.[state.period] && climateChart) climateChart.update(next.series[state.period]);
+        renderClimateStatus(next.status, next);
+
+        // Second NASA source (regional context): fetch as labeled context/check.
+        // For live NASA POWER requests fetch GPM context at the farm point; for
+        // demo/fallback keep an explicit unavailable/labeled fallback state.
+        if (previous.climate?.status !== next.status || previous.climate?.source !== next.source) {
+          if (next.status === 'ready' && next.source === 'nasa-power') {
+            const point = { lat: state.parcel.lat, lon: state.parcel.lon };
+            setState({ regionalContext: { status: 'loading', source: 'NASA GPM IMERG (GES DISC)', product: 'GPM IMERG V07 Monthly', resolution: '~10 km', label: 'Consultando contexto regional NASA…', coverage: null, reason: null, point, checkedAt: null } });
+            fetchRegionalContext(point).then((regionalContext) => {
+              setState({ regionalContext });
+            });
+          } else if (next.source === 'demo') {
+            setState({
+              regionalContext: {
+                status: 'unavailable',
+                source: 'NASA GPM IMERG (GES DISC)',
+                product: 'GPM IMERG V07 Monthly (precipitation, regional)',
+                resolution: '~10 km (producto); agregado al punto de la parcela',
+                label: 'Contexto regional NASA GPM no consultado (modo demostración)',
+                coverage: 'sin verificación',
+                reason: 'demo-fallback',
+                point: { lat: state.parcel.lat, lon: state.parcel.lon },
+                checkedAt: new Date().toISOString()
+              }
+            });
+          } else if (next.status === 'error') {
+            setState({
+              regionalContext: {
+                status: 'unavailable',
+                source: 'NASA GPM IMERG (GES DISC)',
+                product: 'GPM IMERG V07 Monthly (precipitation, regional)',
+                resolution: '~10 km (producto); agregado al punto de la parcela',
+                label: 'Contexto regional NASA GPM no disponible (sin consulta en vivo)',
+                coverage: 'sin verificación',
+                reason: 'climate-error-fallback',
+                point: { lat: state.parcel.lat, lon: state.parcel.lon },
+                checkedAt: new Date().toISOString()
+              }
+            });
+          }
+        }
+      }
     }
-    if (next.status === 'stale') {
-      if (climateChart) climateChart.clear();
-      renderClimateCards(null);
-      renderClimateStatus('stale', next);
-      return;
-    }
-    if (next.status === 'ready' || next.status === 'error') {
-      if (next.summary) renderClimateCards(next.summary, next.meta);
-      else renderClimateCards(null);
-      if (next.series?.[state.period] && climateChart) climateChart.update(next.series[state.period]);
-      renderClimateStatus(next.status, next);
+
+    if (state.regionalContext !== previous.regionalContext) {
+      renderRegionalContext(state.regionalContext);
     }
   });
 

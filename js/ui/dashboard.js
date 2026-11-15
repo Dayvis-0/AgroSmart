@@ -118,6 +118,44 @@ export function renderClimateStatus(status, climate) {
   }
 }
 
+/**
+ * Renders the second NASA source (regional context, e.g. GPM/SMAP) as a labeled
+ * source/resolution and coverage/check signal. Never presents fabricated data.
+ */
+export function renderRegionalContext(regionalContext) {
+  const node = document.getElementById('regional-context-status');
+  if (!node) return;
+
+  const ctx = regionalContext || {};
+  if (ctx.status === 'loading') {
+    node.style.display = 'block';
+    node.textContent = `🛰️ ${ctx.label || 'Consultando contexto regional NASA (segunda fuente)…'}`;
+    return;
+  }
+
+  if (ctx.status === 'available') {
+    node.style.display = 'block';
+    node.textContent = `🛰️ ${ctx.label || ctx.product || 'Contexto regional NASA'} · Fuente: ${ctx.source || 'NASA'} · Resolución: ${ctx.resolution || 'regional'} · Cobertura: ${ctx.coverage || 'referencial'}.`;
+    return;
+  }
+
+  if (ctx.status === 'unavailable') {
+    node.style.display = 'block';
+    const reason = ctx.reason ? ` (${ctx.reason})` : '';
+    node.textContent = `🛰️ ${ctx.label || 'Contexto regional NASA no disponible'} · Fuente: ${ctx.source || 'NASA GPM/SMAP'} · Resolución: ${ctx.resolution || 'regional'} · Cobertura: ${ctx.coverage || 'sin verificación'}${reason}.`;
+    return;
+  }
+
+  if (ctx.status === 'idle' && ctx.label) {
+    node.style.display = 'block';
+    node.textContent = `🛰️ ${ctx.label}`;
+    return;
+  }
+
+  node.style.display = 'none';
+  node.textContent = '';
+}
+
 function notesHtml(notes) {
   return notes
     .map((note) => {

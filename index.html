@@ -224,11 +224,12 @@
     <!-- Climate Cards -->
     <div class="card">
       <div class="card-title">🌦️ Paso 3: Clima estimado de tu zona</div>
-      <div id="climate-status" class="chart-note" style="margin-top:0;margin-bottom:10px;">
+      <div id="climate-status" class="chart-note" style="margin-top:0;margin-bottom:8px;">
         ℹ️ Se muestran datos de ejemplo. Cuando estés listo, presiona “Consultar clima de mi zona” para ver una estimación según la ubicación.
       </div>
+      <div id="regional-context-status" class="chart-note" style="margin-top:0;margin-bottom:10px; display:none;"></div>
       <button type="button" class="btn btn-primary" id="btn-consultar" style="margin-top:0;margin-bottom:10px;">🌦️ Consultar clima de mi zona</button>
-      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (aprox. 50 km), no mediciones exactas de tu parcela.</div>
+      <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:-2px;margin-bottom:10px;">Son estimaciones para la zona (NASA POWER ~50 km). El contexto regional adicional (p. ej. GPM/SMAP) se muestra con su fuente y resolución cuando está disponible.</div>
       <div class="climate-grid">
         <div class="climate-card">
           <div class="cc-icon">🌡️</div><div class="cc-label">Temperatura</div>
