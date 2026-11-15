@@ -15,6 +15,7 @@ let rotations = [];
 let baseAlerts = [];
 let defaultAlert = null;
 let currentPdfDoc = null;
+let requestClimate = null;
 
 async function loadJson(path) {
   const response = await fetch(path);
@@ -150,6 +151,10 @@ function handlePolygonComplete({ lat, lng, latlngs, ha }) {
       areaHa: ha
     }
   });
+
+  if (typeof requestClimate === 'function') {
+    requestClimate({ lat, lon: lng });
+  }
 }
 
 function handleMapPick(lat, lon) {
@@ -237,7 +242,8 @@ async function bootstrap() {
   });
 
   setupDownloadButtons();
-  initForms({ chart, onCompare: handleCompareRotations });
+  const forms = initForms({ chart, onCompare: handleCompareRotations });
+  requestClimate = forms?.requestClimate ?? null;
 }
 
 bootstrap();

@@ -186,8 +186,8 @@ async function handleSearchLocation() {
   }
 }
 
-async function handleClimateQuery() {
-  const coordinates = readCoordinates();
+async function requestClimate(coords = readCoordinates()) {
+  const coordinates = { lat: Number(coords.lat), lon: Number(coords.lon) };
   if (!coordinatesAreValid(coordinates)) {
     alertMessage('Por favor ingrese coordenadas válidas.\nLatitud: -90 a 90\nLongitud: -180 a 180');
     return;
@@ -197,7 +197,10 @@ async function handleClimateQuery() {
   showOverlay('map-loading');
   try {
     const result = await fetchClimate(coordinates);
-    setMarker(coordinates.lat, coordinates.lon, { district: selectedDistrict() });
+    setMarker(coordinates.lat, coordinates.lon, {
+      district: selectedDistrict(),
+      community: selectedCommunity()
+    });
     setState({ climate: { status: 'ready', error: null, ...result } });
   } catch (error) {
     console.error(error);
@@ -211,6 +214,10 @@ async function handleClimateQuery() {
   } finally {
     hideOverlay('map-loading');
   }
+}
+
+function handleClimateQuery() {
+  return requestClimate();
 }
 
 function handleSaveSoil(event) {
@@ -325,4 +332,6 @@ export function initForms({ chart, onCompare }) {
   setupCropTags();
   setupSliders();
   setupPeriodButtons(chart);
+
+  return { requestClimate };
 }
