@@ -263,9 +263,11 @@ function renderCurrentRotationSlots() {
     .join('');
   const slots = [];
 
+  const values = [];
   for (let index = 0; index < CURRENT_ROTATION_SLOTS; index += 1) {
-    const value =
-      currentRotation && allowed.has(currentRotation[index]) ? currentRotation[index] : '';
+    values.push(
+      currentRotation && allowed.has(currentRotation[index]) ? currentRotation[index] : ''
+    );
     slots.push(
       `<select id="cr-slot-${index}" aria-label="Cultivo ${index + 1} de tu rotación actual">
         <option value="">— Vacío —</option>${options}
@@ -274,6 +276,10 @@ function renderCurrentRotationSlots() {
   }
 
   container.innerHTML = slots.join('');
+  values.forEach((value, index) => {
+    const select = byId(`cr-slot-${index}`);
+    if (select) select.value = value;
+  });
 }
 
 function renderCurrentRotationSummary() {
