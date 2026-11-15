@@ -31,6 +31,47 @@ function alertBadge(type) {
   return { label: 'AVISO TÉCNICO', color: [2, 132, 199], bg: [224, 242, 254] };
 }
 
+function describeClimateSource(climate = {}) {
+  if (climate.source === 'nasa-power') {
+    const period = climate.meta?.period?.start
+      ? `${String(climate.meta.period.start).slice(0, 4)}–${String(climate.meta.period.end).slice(0, 4)}`
+      : '';
+    const periodText = period ? ` (${period})` : '';
+    return {
+      short: 'NASA POWER · estimación regional ~50 km',
+      detail: `NASA POWER API (punto mensual, comunidad AG, estimación regional ~50 km)${periodText}. No es una estación local.`
+    };
+  }
+  if (climate.source === 'demo') {
+    return {
+      short: 'Datos de demostración (respaldo)',
+      detail: 'Datos de demostración locales usados como respaldo sin consulta satelital en vivo para esta comparación.'
+    };
+  }
+  return {
+    short: 'Clima no consultado',
+    detail: 'No hay datos climáticos cargados; la comparación puede usar respaldo de demostración etiquetado.'
+  };
+}
+
+function describeRegionalContext(regionalContext = {}, climate = {}) {
+  const ctx = regionalContext || {};
+  if (climate.source === 'demo' && ctx.status !== 'available') {
+    return 'Segunda fuente NASA (GPM IMERG, precipitación regional ~10 km): no consultada en modo demostración/respaldo.';
+  }
+  if (ctx.status === 'available') {
+    return `Segunda fuente NASA: ${ctx.product || 'GPM IMERG'} (${ctx.source || 'GES DISC'}). Resolución: ${ctx.resolution || '~10 km'} · Cobertura: ${ctx.coverage || 'referencial'}.`;
+  }
+  if (ctx.status === 'loading') {
+    return `Segunda fuente NASA: consultando ${ctx.product || 'GPM IMERG'} (contexto regional ~10 km).`;
+  }
+  if (ctx.status === 'unavailable') {
+    const reason = ctx.reason ? ` Motivo: ${ctx.reason}.` : '';
+    return `Segunda fuente NASA (GPM IMERG, contexto regional ~10 km): no disponible en este navegador.${reason}`;
+  }
+  return 'Segunda fuente NASA (GPM IMERG, contexto regional ~10 km): estado no disponible.';
+}
+
 function formatWaterSource(source) {
   if (source === 'lluvia') return 'Lluvia (Secano estacional)';
   if (source === 'riego') return 'Riego tecnificado continuo';
@@ -54,7 +95,8 @@ export function buildComparisonPdf({
   parcel = {},
   soil = {},
   climate = {},
-  priorities = {}
+  priorities = {},
+  regionalContext = null
 }) {
   const jsPDF = getJsPdf();
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
@@ -70,6 +112,8 @@ export function buildComparisonPdf({
     hour: '2-digit',
     minute: '2-digit'
   });
+  const climateSource = describeClimateSource(climate);
+  const regionalContextText = describeRegionalContext(regionalContext, climate);
 
   let y = 0;
 
@@ -122,7 +166,10 @@ export function buildComparisonPdf({
       doc.setFontSize(7);
       doc.setTextColor(148, 163, 184);
       doc.text(`Emisión: ${today}`, pageWidth - margin, 17, { align: 'right' });
-      doc.text('Resolución Satelital: ~50 km (NASA POWER)', pageWidth - margin, 22, { align: 'right' });
+      const sourceLabel = climate.source === 'nasa-power'
+        ? 'Fuente clima: NASA POWER (~50 km, regional)'
+        : 'Fuente clima: demostración (respaldo)';
+      doc.text(sourceLabel, pageWidth - margin, 22, { align: 'right' });
 
       y = 35;
     } else {
@@ -196,29 +243,54 @@ export function buildComparisonPdf({
   doc.text(`• pH: ${soil.ph || 6.2} (${phDesc}) | M. Orgánica: ${formatOrganicMatter(soil.organicMatter)}`, margin + 4, y + 24.5);
   doc.text(`• Drenaje: ${soil.drainage || 'Moderado'} | Riego: ${formatWaterSource(soil.water)}`, margin + 4, y + 29);
 
-  // Tarjeta Clima NASA POWER
+  // Tarjeta Clima (fuente y contexto real)
   const col2X = margin + cardW + 4;
+  const climateCardH = 40;
   doc.setFillColor(248, 250, 252);
-  doc.roundedRect(col2X, y, cardW, cardH, 2, 2, 'FD');
+  doc.roundedRect(col2X, y, cardW, climateCardH, 2, 2, 'FD');
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(30, 41, 59);
-  doc.text('MONITOREO SATELITAL NASA POWER', col2X + 4, y + 5.5);
+  doc.text('CLIMA Y FUENTES DE DATOS', col2X + 4, y + 5.5);
 
-  const summary = climate.summary || { temp: 14.2, prec: 723, rad: 4.8, viento: 3.1 };
+  const summary = climate.summary || null;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(71, 85, 105);
 
-  doc.text(`• Temperatura Media: ${Number(summary.temp).toFixed(1)} °C`, col2X + 4, y + 11);
-  doc.text(`• Precipitación Anual: ${Math.round(summary.prec)} mm/año`, col2X + 4, y + 15.5);
-  doc.text(`• Radiación Solar Global: ${Number(summary.rad).toFixed(1)} kWh/m²/día`, col2X + 4, y + 20);
-  doc.text(`• Velocidad Viento a 10m: ${Number(summary.viento).toFixed(1)} m/s`, col2X + 4, y + 24.5);
-  const srcLabel = climate.source === 'nasa' ? 'NASA POWER API (Satélites CERES / MERRA-2)' : 'NASA POWER Climatología Demostrativa';
-  doc.text(`• Fuente: ${srcLabel}`, col2X + 4, y + 29);
+  if (summary) {
+    doc.text(`• Temperatura media: ${Number(summary.temp ?? 0).toFixed(1)} °C`, col2X + 4, y + 11);
+    doc.text(`• Precipitación anual: ${Math.round(Number(summary.prec ?? 0))} mm/año`, col2X + 4, y + 15.5);
+    doc.text(`• Radiación solar: ${Number(summary.rad ?? 0).toFixed(1)} kWh/m²/día`, col2X + 4, y + 20);
+    doc.text(`• Viento a 10 m: ${Number(summary.viento ?? 0).toFixed(1)} m/s`, col2X + 4, y + 24.5);
+  } else {
+    doc.text('• Sin datos climáticos cargados (se usa respaldo etiquetado).', col2X + 4, y + 11);
+  }
 
-  y += cardH + 5;
+  const sourceLines = doc.splitTextToSize(`• Fuente: ${climateSource.detail}`, cardW - 8);
+  doc.text(sourceLines.slice(0, 2), col2X + 4, y + (summary ? 29 : 16.5));
+
+  y += Math.max(cardH, climateCardH) + 2;
+
+  ensureSpace(14);
+  doc.setFillColor(241, 245, 249);
+  const regionalLines = doc.splitTextToSize(`Contexto regional: ${regionalContextText}`, contentWidth - 8);
+  const regionalBoxH = 5 + regionalLines.length * 3.8;
+  doc.roundedRect(margin, y, contentWidth, regionalBoxH, 2, 2, 'FD');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.2);
+  doc.setTextColor(51, 65, 85);
+  doc.text(regionalLines, margin + 4, y + 4.5);
+  y += regionalBoxH + 2;
+
+  ensureSpace(10);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  const localInputLine = 'Entradas locales (usuario): ubicación/parcela, suelo, cultivos, prioridades y rotación actual. La estimación satelital es regional, no verdad a nivel de parcela.';
+  doc.text(doc.splitTextToSize(localInputLine, contentWidth), margin, y + 2.5);
+  y += 7;
 
   // ─────────────────────────────────────────────────────────
   // SECCIÓN 2: PONDERACIÓN DE PRIORIDADES
@@ -261,9 +333,19 @@ export function buildComparisonPdf({
   } else {
     rankedRotations.forEach((rotation, index) => {
       const isBest = rotation.rank === 0;
-      const notes = rotation.notas || [];
-      const noteLineCount = notes.length;
-      const cardHeight = 27 + noteLineCount * 4.8;
+      const notes = Array.isArray(rotation.notas) ? rotation.notas : [];
+      const resumen = rotation.resumen && typeof rotation.resumen === 'object' ? rotation.resumen : null;
+      const summaryParts = resumen
+        ? [resumen.mejora, resumen.costo, resumen.riesgo].filter(Boolean)
+        : [];
+      const summaryText = summaryParts.join(' ');
+      const summaryLines = summaryText ? doc.splitTextToSize(summaryText, contentWidth - 14) : [];
+      const noteLineCount = notes.reduce((count, note) => {
+        const lines = doc.splitTextToSize(note.text || '', contentWidth - 20);
+        return count + Math.max(1, lines.length);
+      }, 0);
+      const summaryBlockH = summaryLines.length ? 4 + summaryLines.length * 3.8 : 0;
+      const cardHeight = 27 + summaryBlockH + noteLineCount * 4.8;
 
       ensureSpace(cardHeight + 4);
 
@@ -301,12 +383,14 @@ export function buildComparisonPdf({
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10.5);
       doc.setTextColor(15, 23, 42);
-      doc.text(rotation.nombre, margin + 5, y + 12);
+      const originSuffix = rotation.origin === 'current' ? ' (rotación actual)' : '';
+      doc.text(`${rotation.nombre || 'Rotación'}${originSuffix}`, margin + 5, y + 12);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(51, 65, 85);
-      doc.text(`Secuencia propuesta: ${rotation.sequenceText}`, margin + 5, y + 16.5);
+      const seqText = rotation.sequenceText || (Array.isArray(rotation.sequence) ? rotation.sequence.join(' → ') : '');
+      doc.text(`Secuencia propuesta: ${seqText}`, margin + 5, y + 16.5);
 
       // Score numérico y barra
       const scoreX = pageWidth - margin - 45;
@@ -349,8 +433,17 @@ export function buildComparisonPdf({
       }).join('     |     ');
       doc.text(criteriaValues, margin + 7, y + 23);
 
-      // Notas agronómicas
+      // Resumen en lenguaje sencillo (derivado)
       let noteY = y + 28.5;
+      if (summaryLines.length) {
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.4);
+        doc.setTextColor(30, 41, 59);
+        doc.text(summaryLines, margin + 6, noteY);
+        noteY += summaryLines.length * 3.8 + 1.5;
+      }
+
+      // Notas / evidencias y riesgos derivados
       notes.forEach((note) => {
         const sym = noteSymbol(note.type);
         const col = noteColor(note.type);
@@ -424,13 +517,13 @@ export function buildComparisonPdf({
     doc.line(margin, footerY, pageWidth - margin, footerY);
 
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6.8);
+    doc.setFontSize(6.4);
     doc.setTextColor(100, 116, 139);
-    doc.text(
-      'AgroSmart · Plataforma de Inteligencia Agrícola · Integración NASA POWER & GIBS · NASA Space Apps Challenge 2026',
-      margin,
-      footerY + 4
+    const footerText = doc.splitTextToSize(
+      'AgroSmart · Apoyo a decisiones agrícolas · Fuentes: NASA POWER (punto mensual, AG, estimación regional ~50 km), sondeo/contexto regional NASA GPM IMERG cuando aplica, y entradas locales del usuario. Respaldo de demostración etiquetado sin conexión.',
+      contentWidth - 28
     );
+    doc.text(footerText, margin, footerY + 3.8);
 
     doc.text(
       `Página ${page} de ${totalPages}`,

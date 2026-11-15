@@ -283,7 +283,8 @@ function renderComparison({ scroll = false } = {}) {
       parcel: state.parcel,
       soil: state.soil,
       climate: state.climate,
-      priorities: state.priorities
+      priorities: state.priorities,
+      regionalContext: state.regionalContext
     });
   } catch (error) {
     console.error('Error al generar el PDF de rotaciones:', error);

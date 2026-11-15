@@ -1,42 +1,85 @@
 # AgroSmart
 
-Single-page agricultural decision-support prototype for parcels in Andahuaylas (Apurimac, Peru). The application combines parcel and soil inputs, demo rotation scoring, and climate data that can be loaded live from the NASA POWER API.
+Single-page agricultural decision-support prototype for parcels in Andahuaylas (Apurimac, Peru). AgroSmart combines user-provided local inputs (parcel, soil, crops, priorities, current rotation) with NASA climate data to compute, rank, and explain crop-rotation options.
 
-## Project structure
+## What the app does
+
+- Collects parcel location, local soil attributes, selected crops, farmer priorities, and an optional current rotation.
+- Requests climate data from NASA POWER for the selected coordinates and normalizes monthly series/summaries.
+- Probes a second NASA source (GPM IMERG regional precipitation context) as best-effort, labeled context; in browsers this is often unavailable (CORS/Earthdata access) and the app reports that explicitly instead of fabricating data.
+- Generates candidate crop rotations (3+ suggestions; includes the current rotation when valid) from the selected crops.
+- Computes per-criterion and weighted scores from climate, crop requirements, soil modifiers, and farmer priorities (not fixed demo scores).
+- Derives per-rotation evidence/risk notes and plain-language summaries from the evaluated data.
+- Persists farmer inputs in browser `localStorage` (versioned state) and supports an explicit reset.
+- Produces a technical PDF report that renders the computed comparison (scores, derived evidence/risks, summaries) and states data sources/resolution/fallback status.
+
+## Architecture and modules
+
+Front-end vanilla JavaScript (ES modules), HTML, CSS, and JSON data files.
 
 ```text
 .
-├── index.html                 # Markup and module entry point
-├── css/
-│   ├── styles.css             # Design tokens, base styles, keyframes
-│   ├── layout.css             # Top bar, grid, columns, footer
-│   ├── components.css         # Cards, forms, map, chart, rotations, alerts
-│   └── responsive.css         # Responsive breakpoints
+├── index.html
+├── css/                        # Tokens, layout, components, responsive styles
 ├── data/
-│   ├── crops.json             # Crop catalog metadata
-│   ├── demo-scenarios.json    # Demo climate series, rotations and alerts
-│   └── soil-examples.json     # Default parcel and soil values
+│   ├── crops.json              # Crop catalog (requirements/metadata)
+│   ├── demo-scenarios.json     # Labeled offline/demo fallback data only
+│   └── soil-examples.json      # Default parcel/soil example values
 ├── js/
-│   ├── main.js                # Bootstrap and state subscriptions
-│   ├── config.js              # Constants and API configuration
-│   ├── state.js               # Central application state
-│   ├── api/nasa-power.js      # NASA POWER fetch, normalization and demo fallback
-│   ├── map/map-controller.js  # Leaflet map and geolocation
-│   ├── charts/climate-charts.js
+│   ├── main.js                 # Bootstrap, comparison flow, subscriptions
+│   ├── config.js               # Constants and API configuration
+│   ├── state.js                # Central application state
+│   ├── state-persistence.js    # Versioned localStorage persistence
+│   ├── api/
+│   │   ├── nasa-power.js       # NASA POWER fetch, normalization, demo fallback
+│   │   └── regional-context.js # GPM IMERG regional context probe/check (best-effort)
 │   ├── agriculture/
-│   │   ├── soil-manager.js
+│   │   ├── rotation-model.js   # Shared rotation model/type helpers
+│   │   ├── scoring-engine.js   # Computed per-criterion scoring
+│   │   ├── rotation-engine.js  # Priority-weight aggregation and ranking
+│   │   ├── rotation-generator.js # Candidate rotation generation (3+)
+│   │   ├── rotation-insights.js  # Derived evidence/risk notes
+│   │   ├── rotation-summary.js   # Plain-language per-rotation summary
 │   │   ├── crop-catalog.js
-│   │   └── rotation-engine.js # Pure weighted scoring
+│   │   └── soil-manager.js
 │   ├── alerts/alert-manager.js
+│   ├── charts/climate-charts.js
+│   ├── map/map-controller.js
+│   ├── reports/pdf-report.js   # PDF rendering of computed comparison
 │   └── ui/
 │       ├── dashboard.js
 │       ├── forms.js
 │       └── notifications.js
-└── odd/
-    └── ...                    # Project planning and task docs
+└── odd/                        # Planning/task docs
 ```
 
-## Run locally
+## Data sources and behavior
+
+### NASA POWER (primary climate source)
+- Provider: [NASA POWER](https://power.larc.nasa.gov/) monthly point API (`community=AG`).
+- Parameters used: `T2M` (°C), `PRECTOTCORR` (mm/day, aggregated to monthly/annual mm), `WS10M` (m/s), `ALLSKY_SFC_SW_DWN` (MJ/m²/day, converted to kWh/m²/day).
+- Resolution/caveat: ~50 km regional estimate, not a local weather station and not field-truth measurements.
+- Press **Consultar Clima** to request live values for the selected coordinates. On request failure, the app keeps working with explicitly labeled demo fallback data.
+
+### Second NASA source: GPM IMERG regional context (best-effort)
+- Target: NASA GES DISC GPM IMERG V07 monthly precipitation as regional context/coverage check (~10 km product resolution, referenced at the parcel point).
+- Behavior: the app performs a best-effort probe/fetch. In a browser-only context this commonly cannot return full granule data due to CORS/Earthdata authentication; the app degrades gracefully and labels the context as unavailable or referential without inventing values.
+- The UI and PDF report this source and its status/resolution separately from NASA POWER.
+
+### Local inputs and persistence
+- Parcel, soil, selected crops, priorities, and current rotation are user-entered/local inputs (soil examples from `data/soil-examples.json` are defaults/examples, not NASA products).
+- Inputs are persisted locally in the browser (`localStorage`) and reloaded on start; an explicit reset clears persisted state.
+
+### Computed scoring and comparison (not static demo scores)
+- Rotation scores are computed by the scoring/rotation engines from available climate data, crop requirements, soil modifiers, and the five farmer-priority weights; changing these inputs changes the ranking deterministically.
+- Candidate rotations are generated from selected crops to provide 3+ comparable options (and include the current rotation when provided/valid).
+- Evidence/risk notes and plain-language summaries are derived from the evaluated climate/soil/sequence/scores (not static demo text in the normal comparison flow).
+
+### Demo/offline fallback
+- `data/demo-scenarios.json` is labeled demo/fallback data only. It is used to keep the app usable when live climate data is unavailable or not yet loaded; the UI/PDF label demo/fallback status explicitly.
+- The normal comparison flow does not use the demo file's static rotation scores/content as its scoring source.
+
+## Running locally
 
 ES modules and JSON loading require an HTTP server. Opening `index.html` directly with `file://` will not work correctly.
 
@@ -46,15 +89,15 @@ python3 -m http.server 8000
 
 Then open [http://localhost:8000](http://localhost:8000).
 
-## Climate data
+## Verification
 
-Press **Consultar Clima** to request real values from [NASA POWER](https://power.larc.nasa.gov/) (monthly point API, `community=AG`) for the selected coordinates.
+```bash
+node --test
+node --check js/reports/pdf-report.js js/main.js
+```
 
-- Parameters: `T2M` (°C), `PRECTOTCORR` (mm/day, aggregated to monthly/annual mm), `WS10M` (m/s), `ALLSKY_SFC_SW_DWN` (MJ/m²/day, converted to kWh/m²/day).
-- The UI shows source, period and a ~50 km resolution warning. NASA POWER is not a local weather station.
-- On request failure, the app keeps working with explicitly labeled demo data as fallback.
-- Water-deficit alerts are computed from the loaded monthly precipitation series when possible.
+## Limitations
 
-## Rotation engine
-
-Rotation scores are weighted averages of the five criteria priorities (1–5). For the default priorities `[4, 3, 5, 3, 4]` the demo rotations score **82 (A)**, **74 (B)** and **56 (C)**. Results are indicative and based on simplified agronomic rules.
+- Climate inputs are regional estimates (NASA POWER ~50 km; GPM context ~10 km) and should support, not replace, local field knowledge and agronomic advice.
+- Scoring is a simplified agronomic model; results are indicative and depend on the quality of local inputs.
+- Full GPM/SMAP data access may require authenticated/server-side access; the browser build reports such sources as labeled regional context/checks rather than guaranteed field-level measurements.
