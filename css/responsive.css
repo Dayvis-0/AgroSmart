@@ -15,8 +15,34 @@
       width: calc(100% - 16px);
       max-height: calc(100% - 60px);
     }
+
+    .map-card-title {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .map-card-title > div {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .map-card-title .btn {
+      flex: 1 1 140px;
+    }
+
+    #comparison-actions {
+      flex-direction: column;
+    }
+    #comparison-actions .btn {
+      width: 100%;
+      flex: none;
+    }
   }
   @media (max-width: 540px) {
+    .topbar {
+      padding: 0 10px;
+      gap: 8px;
+    }
+    .topbar-logo .logo-text { font-size: 14px; }
+    .topbar-logo .logo-sub { display: none; }
     .topbar-status { gap: 8px; }
     .status-item .si-label { display: none; }
     .climate-grid { grid-template-columns: 1fr 1fr; }
@@ -25,7 +51,46 @@
       flex-direction: column;
     }
 
+    .card {
+      margin: 10px;
+      padding: 12px;
+    }
+
     .map-card-title {
       align-items: flex-start;
     }
+    .map-card-title > div {
+      flex-direction: column;
+    }
+    .map-card-title .btn {
+      width: 100%;
+      flex: none;
+    }
+
+    .chart-controls {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .period-btns {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .period-btn {
+      flex: 1 1 0;
+      text-align: center;
+    }
+
+    #comparison-actions {
+      margin: 0 10px 10px 10px;
+    }
+
+    .disclaimer-bar {
+      padding: 6px 10px;
+      font-size: 9px;
+    }
+  }
+  @media (max-width: 380px) {
+    .climate-grid { grid-template-columns: 1fr; }
+    .input-row { grid-template-columns: 1fr; }
   }
