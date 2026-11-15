@@ -311,16 +311,17 @@
         <div class="slider-val" id="sv-riesgo">4</div>
       </div>
 
-      <button class="btn btn-primary" id="btn-comparar">🔄 Comparar Rotaciones</button>
-      <button class="btn btn-pdf-download" id="btn-descargar-pdf" style="display:none;" title="Descargar informe técnico agronómico en PDF">📥 Descargar Reporte PDF</button>
+    </div>
+
+    <!-- Acciones de comparación -->
+    <div id="comparison-actions" style="margin:0 12px 12px 12px; display:flex; gap:8px; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="btn-comparar" style="margin-top:0; flex:1;">🔄 Comparar Rotaciones</button>
+      <button class="btn btn-pdf-download" id="btn-descargar-pdf" style="display:none; margin-top:0; flex:1;" title="Descargar informe técnico agronómico en PDF">📥 Descargar Reporte PDF</button>
     </div>
 
     <!-- Resultados y alertas: se exportan en PDF al comparar -->
     <div class="card" id="card-resultados" style="display:none">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-        <div class="card-title" style="margin-bottom:0;">📊 Comparación de Rotaciones</div>
-        <button class="btn btn-secondary" id="btn-descargar-pdf-card" style="display:none; margin-top:0; padding:5px 12px; font-size:11px; width:auto;" title="Descargar informe técnico en PDF">📥 Descargar PDF</button>
-      </div>
+      <div class="card-title">📊 Comparación de Rotaciones</div>
       <div id="rotaciones-container"><!-- se rellena con JS --></div>
     </div>
 

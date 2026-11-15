@@ -18,10 +18,26 @@ let currentPdfDoc = null;
 let requestClimate = null;
 let climateChart = null;
 
+function clearComparisonResults() {
+  const cardResultados = byId('card-resultados');
+  const cardAlertas = byId('card-alertas');
+  const rotContainer = byId('rotaciones-container');
+  const alertsContainer = byId('alerts-container');
+  const btnDescargar = byId('btn-descargar-pdf');
+
+  if (cardResultados) cardResultados.style.display = 'none';
+  if (cardAlertas) cardAlertas.style.display = 'none';
+  if (rotContainer) rotContainer.innerHTML = '';
+  if (alertsContainer) alertsContainer.innerHTML = '';
+  if (btnDescargar) btnDescargar.style.display = 'none';
+  currentPdfDoc = null;
+}
+
 function invalidateClimate() {
   if (climateChart && typeof climateChart.clear === 'function') {
     climateChart.clear();
   }
+  clearComparisonResults();
   setState({
     climate: {
       status: 'stale',
@@ -131,9 +147,7 @@ function renderComparison({ scroll = false } = {}) {
   }
 
   const btnDescargar = byId('btn-descargar-pdf');
-  const btnDescargarCard = byId('btn-descargar-pdf-card');
   if (btnDescargar) btnDescargar.style.display = 'inline-flex';
-  if (btnDescargarCard) btnDescargarCard.style.display = 'inline-flex';
 
   if (scroll && cardResultados) {
     cardResultados.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -166,9 +180,7 @@ function setupDownloadButtons() {
   };
 
   const btnDescargar = byId('btn-descargar-pdf');
-  const btnDescargarCard = byId('btn-descargar-pdf-card');
   if (btnDescargar) btnDescargar.addEventListener('click', onDownload);
-  if (btnDescargarCard) btnDescargarCard.addEventListener('click', onDownload);
 }
 
 function handlePolygonComplete({ lat, lng, latlngs, ha }) {
