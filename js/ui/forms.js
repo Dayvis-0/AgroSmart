@@ -7,6 +7,10 @@ import { LOCATE_EVENT, locateUser, setMarker, startParcelDrawing } from '../map/
 import { getState, setState } from '../state.js';
 import { alertMessage, busyButton, hideOverlay, showOverlay } from './notifications.js';
 
+const CURRENT_ROTATION_SLOTS = 4;
+
+let cropsCatalog = [];
+
 const byId = (id) => document.getElementById(id);
 const selectedDistrict = () => byId('sel-distrito').value;
 const selectedCommunity = () => {
@@ -243,14 +247,114 @@ function handleCompare(event, onCompare) {
   }, 400);
 }
 
+function cropLabel(cropId) {
+  const crop = cropsCatalog.find((item) => item.id === cropId);
+  return crop ? `${crop.icon} ${crop.name}` : cropId;
+}
+
+function renderCurrentRotationSlots() {
+  const container = byId('current-rotation-slots');
+  if (!container) return;
+
+  const { crops: selectedIds, currentRotation } = getState();
+  const allowed = new Set(selectedIds);
+  const options = selectedIds
+    .map((cropId) => `<option value="${cropId}">${cropLabel(cropId)}</option>`)
+    .join('');
+  const slots = [];
+
+  for (let index = 0; index < CURRENT_ROTATION_SLOTS; index += 1) {
+    const value =
+      currentRotation && allowed.has(currentRotation[index]) ? currentRotation[index] : '';
+    slots.push(
+      `<select id="cr-slot-${index}" aria-label="Cultivo ${index + 1} de tu rotación actual">
+        <option value="">— Vacío —</option>${options}
+      </select>`
+    );
+  }
+
+  container.innerHTML = slots.join('');
+}
+
+function renderCurrentRotationSummary() {
+  const node = byId('current-rotation-summary');
+  if (!node) return;
+
+  const values = getState().currentRotation;
+  node.textContent =
+    Array.isArray(values) && values.length >= 2
+      ? `Tu rotación actual: ${values.map(cropLabel).join(' → ')}`
+      : 'Todavía no definiste tu rotación actual.';
+}
+
+function readCurrentRotationValues() {
+  return [...document.querySelectorAll('#current-rotation-slots select')]
+    .map((select) => select.value)
+    .filter(Boolean);
+}
+
 function setupCropTags(onCropsChange) {
   byId('crop-grid').addEventListener('click', (event) => {
     const tag = event.target.closest('.crop-tag');
     if (!tag) return;
     toggleCrop(tag.dataset.cropId);
-    setState({ crops: getSelectedIds() });
+
+    const nextCrops = getSelectedIds();
+    const allowed = new Set(nextCrops);
+    const pruned = (getState().currentRotation || []).filter((cropId) => allowed.has(cropId));
+    setState({
+      crops: nextCrops,
+      currentRotation: pruned.length >= 2 ? pruned : null
+    });
+
+    renderCurrentRotationSlots();
+    renderCurrentRotationSummary();
     if (typeof onCropsChange === 'function') onCropsChange();
   });
+}
+
+function setupCurrentRotationInput(onCurrentRotationChange) {
+  const container = byId('current-rotation-slots');
+  const fillButton = byId('btn-fill-current-rotation');
+
+  if (container) {
+    container.addEventListener('change', () => {
+      const values = readCurrentRotationValues();
+      setState({ currentRotation: values.length >= 2 ? values : null });
+      renderCurrentRotationSummary();
+      if (typeof onCurrentRotationChange === 'function') onCurrentRotationChange();
+    });
+  }
+
+  if (fillButton) {
+    fillButton.addEventListener('click', () => {
+      const values = getState().crops.slice(0, CURRENT_ROTATION_SLOTS);
+      setState({ currentRotation: values.length >= 2 ? values : null });
+      renderCurrentRotationSlots();
+      renderCurrentRotationSummary();
+    });
+  }
+}
+
+/**
+ * Syncs every control driven by persisted state with the current state.
+ */
+export function syncControlsFromState() {
+  const { crops: selectedIds, priorities } = getState();
+
+  document.querySelectorAll('#crop-grid .crop-tag').forEach((tag) => {
+    tag.classList.toggle('selected', selectedIds.includes(tag.dataset.cropId));
+  });
+
+  for (const criterion of CRITERIA) {
+    const slider = byId(`pr-${criterion.key}`);
+    const value = byId(`sv-${criterion.key}`);
+    if (slider) slider.value = priorities[criterion.key];
+    if (value) value.textContent = priorities[criterion.key];
+  }
+
+  renderCurrentRotationSlots();
+  renderCurrentRotationSummary();
 }
 
 function setupSliders(onPrioritiesChange) {
@@ -279,7 +383,27 @@ function setupPeriodButtons(chart) {
   });
 }
 
-export function initForms({ chart, onCompare, onLocationChange, onCropsChange, onPrioritiesChange }) {
+export function initForms({
+  chart,
+  crops = [],
+  onCompare,
+  onLocationChange,
+  onCropsChange,
+  onPrioritiesChange,
+  onCurrentRotationChange
+}) {
+  cropsCatalog = Array.isArray(crops) ? crops : [];
+
+  // Drop any persisted current rotation that no longer matches the selected crops.
+  const allowedCrops = new Set(getState().crops);
+  const storedRotation = getState().currentRotation;
+  if (Array.isArray(storedRotation)) {
+    const pruned = storedRotation.filter((cropId) => allowedCrops.has(cropId));
+    if (pruned.length !== storedRotation.length) {
+      setState({ currentRotation: pruned.length >= 2 ? pruned : null });
+    }
+  }
+
   const inLat = byId('in-lat');
   const inLon = byId('in-lon');
   const inComunidad = byId('in-comunidad');
@@ -337,8 +461,10 @@ export function initForms({ chart, onCompare, onLocationChange, onCropsChange, o
   if (btnComparar) btnComparar.addEventListener('click', (event) => handleCompare(event, onCompare));
 
   setupCropTags(onCropsChange);
+  setupCurrentRotationInput(onCurrentRotationChange);
   setupSliders(onPrioritiesChange);
   setupPeriodButtons(chart);
+  syncControlsFromState();
 
   return { requestClimate };
 }

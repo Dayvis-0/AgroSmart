@@ -1,4 +1,6 @@
 {
+  "demo": true,
+  "label": "Datos de demostración — fallback sin conexión",
   "climate": {
     "source": "demo",
     "summary": { "temp": 14.2, "prec": 723, "viento": 3.1, "rad": 4.8 },
@@ -24,6 +26,7 @@
     {
       "id": "A",
       "nombre": "Rotación A",
+      "origin": "demo",
       "secuencia": "Papa → Quinua → Haba → Descanso",
       "scores": { "agua": 85, "suelo": 90, "prod": 78, "costo": 70, "riesgo": 85 },
       "notas": [
@@ -37,6 +40,7 @@
     {
       "id": "B",
       "nombre": "Rotación B",
+      "origin": "demo",
       "secuencia": "Maíz → Papa → Avena → Haba",
       "scores": { "agua": 60, "suelo": 80, "prod": 85, "costo": 75, "riesgo": 70 },
       "notas": [
@@ -50,6 +54,7 @@
     {
       "id": "C",
       "nombre": "Rotación C — Riesgo alto",
+      "origin": "demo",
       "secuencia": "Papa → Maíz → Papa (riesgo monocultivo)",
       "scores": { "agua": 55, "suelo": 30, "prod": 70, "costo": 80, "riesgo": 40 },
       "notas": [

@@ -129,6 +129,9 @@ function notesHtml(notes) {
 }
 
 function criteriaHtml(scores) {
+  if (!scores) {
+    return CRITERIA.map(() => '<div class="crit-pill">—</div>').join('');
+  }
   return CRITERIA.map((criterion) => `<div class="crit-pill">${criterion.icon} ${scores[criterion.key]}</div>`).join(
     ''
   );
@@ -148,24 +151,33 @@ export function renderRotations(container, ranked, { message = '' } = {}) {
     messageHtml +
     ranked
       .map((rotation) => {
-        const pct = rotation.wscore;
-        const color = barColor(pct);
-        const bestBadge = rotation.rank === 0 ? '<span class="best-badge">⭐ Mejor opción</span>' : '';
+        const scored = rotation.wscore !== null && rotation.wscore !== undefined;
+        const pct = scored ? rotation.wscore : 0;
+        const pctText = scored ? rotation.wscore : '—';
+        const color = scored ? barColor(rotation.wscore) : '#64748b';
+        const bestBadge =
+          rotation.rank === 0 && scored ? '<span class="best-badge">⭐ Mejor opción</span>' : '';
+        const currentBadge =
+          rotation.origin === 'current' ? '<span class="best-badge">🔁 Actual</span>' : '';
+        const cardClass = rotation.class ? `rotation-card ${rotation.class}` : 'rotation-card';
+        const pendingNote = rotation.scores
+          ? ''
+          : '<div class="rot-note" style="color:#94a3b8">ℹ️ <span style="color:var(--text-secondary)">Todavía no calculamos el puntaje de esta rotación.</span></div>';
 
         return `
-      <div class="rotation-card ${rotation.class}" style="animation: fadeIn 0.4s ease ${rotation.rank * 0.1}s both">
+      <div class="${cardClass}" style="animation: fadeIn 0.4s ease ${rotation.rank * 0.1}s both">
         <div class="rot-header">
           <div>
-            <div class="rot-name">${rotation.nombre}${bestBadge}</div>
-            <div class="rot-sequence">${rotation.secuencia}</div>
+            <div class="rot-name">${rotation.nombre}${bestBadge}${currentBadge}</div>
+            <div class="rot-sequence">${rotation.sequenceText}</div>
           </div>
-          <div class="rot-score-label" style="color:${color}">${pct}<small>/100</small></div>
+          <div class="rot-score-label" style="color:${color}">${pctText}<small>${scored ? '/100' : ''}</small></div>
         </div>
         <div class="score-bar-wrap">
           <div class="score-bar" style="width:${pct}%;background:${color}"></div>
         </div>
         <div class="crit-row">${criteriaHtml(rotation.scores)}</div>
-        <div class="rot-notes">${notesHtml(rotation.notas)}</div>
+        <div class="rot-notes">${notesHtml(rotation.notas)}${pendingNote}</div>
       </div>`;
       })
       .join('');

@@ -190,6 +190,8 @@
         Esta herramienta usa estimaciones climáticas de zona y datos de ejemplo para orientar decisiones. No reemplaza la observación en tu parcela ni la recomendación de un especialista.
       </div>
     </div>
+
+    <button type="button" class="btn btn-secondary" id="btn-reset" style="margin:12px; width:calc(100% - 24px);">♻️ Restablecer datos guardados</button>
   </div>
 
   <!-- ─────────── CENTER COLUMN ─────────── -->
@@ -279,6 +281,17 @@
       <div class="card-title">🌾 Paso 4: Elegí los cultivos que te interesan</div>
       <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:8px;">Tocá los cultivos que tenés o querés probar. Esto ayuda a ver qué rotaciones son posibles.</div>
       <div class="crop-grid" id="crop-grid"></div>
+
+      <!-- Rotación actual -->
+      <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border-subtle);">
+        <label for="cr-slot-0">🔁 Tu rotación actual</label>
+        <div class="parcel-filter-sub parcel-filter-sub--inline" style="margin-top:0;margin-bottom:6px;">
+          Contá el orden en que sembrás ahora. Elegí hasta 4 cultivos de los que seleccionaste arriba; dejá los pasos vacíos si tu rotación es más corta.
+        </div>
+        <div id="current-rotation-slots" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px;"></div>
+        <button type="button" class="btn btn-secondary" id="btn-fill-current-rotation" style="margin-top:8px; font-size:11px;">✨ Autocompletar con mi selección</button>
+        <div class="parcel-filter-sub parcel-filter-sub--inline" id="current-rotation-summary" style="margin-top:6px;">Todavía no definiste tu rotación actual.</div>
+      </div>
     </div>
 
     <!-- Prioridades -->

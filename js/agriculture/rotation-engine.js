@@ -12,6 +12,7 @@ export function normalizeWeights(values) {
 }
 
 export function weightedScore(scores, weights) {
+  if (!scores) return null;
   return Math.round(
     CRITERIA.reduce((acc, criterion, index) => acc + scores[criterion.key] * weights[index], 0)
   );
@@ -20,7 +21,7 @@ export function weightedScore(scores, weights) {
 export function rankRotations(rotations, weights) {
   return rotations
     .map((rotation) => ({ ...rotation, wscore: weightedScore(rotation.scores, weights) }))
-    .sort((a, b) => b.wscore - a.wscore)
+    .sort((a, b) => (b.wscore ?? -1) - (a.wscore ?? -1))
     .map((rotation, index) => ({ ...rotation, rank: index }));
 }
 

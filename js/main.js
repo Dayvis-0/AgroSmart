@@ -1,17 +1,19 @@
 import { renderCrops } from './agriculture/crop-catalog.js';
 import { CRITERIA, normalizeWeights, rankRotations } from './agriculture/rotation-engine.js';
+import { buildCurrentRotation, normalizeRotation } from './agriculture/rotation-model.js';
 import { writeSoilForm } from './agriculture/soil-manager.js';
 import { renderAlerts } from './alerts/alert-manager.js';
 import { createClimateChart } from './charts/climate-charts.js';
 import { initMap, setMarker } from './map/map-controller.js';
 import { buildComparisonPdf, downloadPdf } from './reports/pdf-report.js';
-import { getState, setState, subscribe } from './state.js';
+import { getState, setState, subscribe, resetState, hasPersistedState } from './state.js';
 import { renderClimateCards, renderClimateStatus, renderRotations, startClock } from './ui/dashboard.js';
-import { initForms } from './ui/forms.js';
+import { initForms, syncControlsFromState } from './ui/forms.js';
 
 const byId = (id) => document.getElementById(id);
 
 let rotations = [];
+let cropCatalog = [];
 let baseAlerts = [];
 let defaultAlert = null;
 let currentPdfDoc = null;
@@ -73,12 +75,6 @@ async function loadData() {
   return data;
 }
 
-const ROTATION_CROPS = {
-  A: ['papa', 'quinua', 'haba'],
-  B: ['maiz', 'papa', 'avena', 'haba'],
-  C: ['papa', 'maiz']
-};
-
 function buildAlerts(waterDeficit) {
   const alerts = [...baseAlerts];
   const first = waterDeficit ?? defaultAlert;
@@ -86,12 +82,24 @@ function buildAlerts(waterDeficit) {
   return alerts;
 }
 
+function getCurrentRotation() {
+  const ids = getState().currentRotation;
+  if (!Array.isArray(ids) || ids.length < 2) return null;
+  return buildCurrentRotation(ids, { cropCatalog });
+}
+
 function getApplicableRotations() {
   const selected = new Set(getState().crops || []);
-  return rotations.filter((rotation) => {
-    const required = ROTATION_CROPS[rotation.id] || [];
-    return required.every((cropId) => selected.has(cropId));
-  });
+  const applicable = rotations.filter(
+    (rotation) =>
+      rotation.sequence.length > 0 &&
+      rotation.sequence.every((cropId) => selected.has(cropId))
+  );
+  const currentRotation = getCurrentRotation();
+  if (currentRotation && currentRotation.sequence.every((cropId) => selected.has(cropId))) {
+    applicable.push(currentRotation);
+  }
+  return applicable;
 }
 
 function getRankedRotations() {
@@ -183,6 +191,39 @@ function setupDownloadButtons() {
   if (btnDescargar) btnDescargar.addEventListener('click', onDownload);
 }
 
+function syncParcelInputs() {
+  const parcel = getState().parcel;
+  const latInput = byId('in-lat');
+  const lonInput = byId('in-lon');
+  const districtInput = byId('sel-distrito');
+  const communityInput = byId('in-comunidad');
+
+  if (latInput && typeof parcel.lat === 'number') latInput.value = String(parcel.lat);
+  if (lonInput && typeof parcel.lon === 'number') lonInput.value = String(parcel.lon);
+  if (districtInput && parcel.district) districtInput.value = parcel.district;
+  if (communityInput) communityInput.value = parcel.community ?? '';
+
+  if (typeof parcel.lat === 'number' && typeof parcel.lon === 'number') {
+    setMarker(parcel.lat, parcel.lon, {
+      district: parcel.district,
+      community: parcel.community
+    });
+  }
+}
+
+function handleReset() {
+  resetState();
+  clearComparisonResults();
+  writeSoilForm(getState().soil);
+  syncControlsFromState();
+  syncParcelInputs();
+}
+
+function setupResetButton() {
+  const btnReset = byId('btn-reset');
+  if (btnReset) btnReset.addEventListener('click', handleReset);
+}
+
 function handlePolygonComplete({ lat, lng, latlngs, ha }) {
   const latInput = byId('in-lat');
   const lonInput = byId('in-lon');
@@ -245,12 +286,17 @@ function handleMapPick(lat, lon) {
 
 async function bootstrap() {
   const { crops, demo, soilExamples } = await loadData();
+  cropCatalog = Array.isArray(crops) ? crops : [];
 
+  // Persisted farmer inputs win over the demo defaults from soil-examples.json.
+  const persisted = hasPersistedState();
   const demoParcel = soilExamples?.demoParcel;
-  const parcel = demoParcel
+  const parcel = !persisted && demoParcel
     ? { lat: demoParcel.lat, lon: demoParcel.lon, district: demoParcel.district, community: demoParcel.community }
     : getState().parcel;
-  const soil = demoParcel?.soil ?? soilExamples?.defaultSoil ?? getState().soil;
+  const soil = !persisted
+    ? (demoParcel?.soil ?? soilExamples?.defaultSoil ?? getState().soil)
+    : getState().soil;
 
   if (demo?.climate) {
     setState({
@@ -270,7 +316,8 @@ async function bootstrap() {
     setState({ parcel, soil });
   }
 
-  rotations = demo?.rotations ?? [];
+  // Demo rotations are an offline fallback only; Phase 1 computes real scores.
+  rotations = (demo?.rotations ?? []).map((raw) => normalizeRotation(raw, cropCatalog));
   const alerts = demo?.alerts ?? [];
   defaultAlert = alerts.find((alert) => alert.title === 'Déficit hídrico estacional') ?? null;
   baseAlerts = alerts.filter((alert) => alert.title !== 'Déficit hídrico estacional');
@@ -310,14 +357,18 @@ async function bootstrap() {
   });
 
   setupDownloadButtons();
+  setupResetButton();
   const forms = initForms({
     chart: climateChart,
+    crops: cropCatalog,
     onCompare: handleCompareRotations,
     onLocationChange: invalidateClimate,
     onCropsChange: refreshComparisonIfVisible,
-    onPrioritiesChange: refreshComparisonIfVisible
+    onPrioritiesChange: refreshComparisonIfVisible,
+    onCurrentRotationChange: refreshComparisonIfVisible
   });
   requestClimate = forms?.requestClimate ?? null;
+  syncParcelInputs();
 }
 
 bootstrap();

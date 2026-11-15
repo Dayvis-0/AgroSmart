@@ -306,25 +306,32 @@ export function buildComparisonPdf({
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(51, 65, 85);
-      doc.text(`Secuencia propuesta: ${rotation.secuencia}`, margin + 5, y + 16.5);
+      doc.text(`Secuencia propuesta: ${rotation.sequenceText}`, margin + 5, y + 16.5);
 
       // Score numérico y barra
       const scoreX = pageWidth - margin - 45;
+      const scored = rotation.wscore !== null && rotation.wscore !== undefined;
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
-      const scoreColor = rotation.wscore >= 70 ? [16, 185, 129] : rotation.wscore >= 50 ? [217, 119, 6] : [220, 38, 38];
+      const scoreColor = !scored
+        ? [100, 116, 139]
+        : rotation.wscore >= 70
+          ? [16, 185, 129]
+          : rotation.wscore >= 50
+            ? [217, 119, 6]
+            : [220, 38, 38];
       doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-      doc.text(`${rotation.wscore}`, scoreX + 22, y + 8, { align: 'right' });
+      doc.text(scored ? `${rotation.wscore}` : '—', scoreX + 22, y + 8, { align: 'right' });
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(100, 116, 139);
-      doc.text('/100 pts', scoreX + 24, y + 8);
+      doc.text(scored ? '/100 pts' : '', scoreX + 24, y + 8);
 
       // Barra gráfica de score
       doc.setFillColor(226, 232, 240);
       doc.roundedRect(scoreX, y + 11, 40, 3, 1, 1, 'F');
-      const barFillW = Math.max(2, (rotation.wscore / 100) * 40);
+      const barFillW = scored ? Math.max(2, (rotation.wscore / 100) * 40) : 0;
       doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
       doc.roundedRect(scoreX, y + 11, barFillW, 3, 1, 1, 'F');
 
