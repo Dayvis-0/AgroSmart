@@ -44,8 +44,9 @@
 <div class="main-grid">
 
   <!-- ─────────── LEFT COLUMN ─────────── -->
-  <div class="col" id="col-left">
-    <div class="col-header"><div class="dot"></div> PASO 1 Y 2: TU PARCELA Y TU SUELO</div>
+  <div class="col col-collapsible" id="col-left">
+    <button type="button" class="col-header col-toggle" id="toggle-col-left" aria-expanded="true" aria-controls="col-left-body"><div class="dot"></div><span class="col-header-text">PASO 1 Y 2: TU PARCELA Y TU SUELO</span><span class="col-toggle-hint">Toca para ver</span><span class="col-toggle-icon" aria-hidden="true">▾</span></button>
+    <div class="col-body" id="col-left-body">
 
     <!-- Paso 1: Ubicar parcela -->
     <div class="card parcel-filter-panel-inline" id="parcel-filter-panel" aria-hidden="false">
@@ -192,6 +193,7 @@
     </div>
 
     <button type="button" class="btn btn-secondary" id="btn-reset" style="margin:12px; width:calc(100% - 24px);">♻️ Restablecer datos guardados</button>
+    </div>
   </div>
 
   <!-- ─────────── CENTER COLUMN ─────────── -->
@@ -274,8 +276,9 @@
   </div>
 
   <!-- ─────────── RIGHT COLUMN ─────────── -->
-  <div class="col" id="col-right">
-    <div class="col-header"><div class="dot"></div> PASO 4 Y 5: CULTIVOS Y RECOMENDACIONES</div>
+  <div class="col col-collapsible" id="col-right">
+    <button type="button" class="col-header col-toggle" id="toggle-col-right" aria-expanded="true" aria-controls="col-right-body"><div class="dot"></div><span class="col-header-text">PASO 4 Y 5: CULTIVOS Y RECOMENDACIONES</span><span class="col-toggle-hint">Toca para ver</span><span class="col-toggle-icon" aria-hidden="true">▾</span></button>
+    <div class="col-body" id="col-right-body">
 
     <!-- Cultivos -->
     <div class="card">
@@ -344,6 +347,7 @@
     <div class="card section-pad" id="card-alertas" style="display:none">
       <div class="card-title">🔔 Avisos importantes</div>
       <div id="alerts-container"></div>
+    </div>
     </div>
   </div><!-- /col-right -->
 </div><!-- /main-grid -->

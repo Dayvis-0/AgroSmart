@@ -9,6 +9,18 @@
     .col:last-child { border-bottom: none; }
     .topbar-center { display: none; }
 
+    .col-toggle {
+      cursor: pointer;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      row-gap: 2px;
+    }
+    .col-toggle-hint { display: inline-block; order: 3; flex-basis: 100%; margin-left: 13px; margin-right: 0; }
+    .col-toggle-icon { display: inline-block; margin-left: auto; }
+    .col-collapsible.is-collapsed .col-toggle-icon { transform: rotate(-90deg); }
+    .col-collapsible.is-collapsed .col-body { display: none; }
+    .col-collapsible.is-collapsed .col-header { border-bottom: none; }
+
     .parcel-filter-panel {
       top: 52px;
       left: 8px;

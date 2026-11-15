@@ -14,6 +14,7 @@ import { fetchRegionalContext } from './api/regional-context.js';
 import { getState, setState, subscribe, resetState, hasPersistedState } from './state.js';
 import { renderClimateCards, renderClimateStatus, renderRegionalContext, renderRotations, startClock } from './ui/dashboard.js';
 import { initForms, syncControlsFromState } from './ui/forms.js';
+import { initMobileAccordions } from './ui/mobile-accordions.js';
 
 const byId = (id) => document.getElementById(id);
 
@@ -475,6 +476,7 @@ async function bootstrap() {
   writeSoilForm(getState().soil);
 
   climateChart = createClimateChart('clima-chart');
+  initMobileAccordions();
   const { period, climate, regionalContext } = getState();
   if (climate.series?.[period]) climateChart.update(climate.series[period]);
   if (climate.summary) renderClimateCards(climate.summary, climate.meta);

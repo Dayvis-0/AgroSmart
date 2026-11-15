@@ -99,12 +99,38 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    width: 100%;
+    text-align: left;
   }
   .col-header .dot {
     width: 5px; height: 5px;
     border-radius: 50%;
     background: var(--accent-cyan);
+    flex-shrink: 0;
   }
+  .col-header-text { flex: 1; }
+  .col-toggle {
+    border: none;
+    cursor: default;
+  }
+  .col-toggle-hint {
+    display: none;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: auto;
+    margin-right: 6px;
+    white-space: nowrap;
+  }
+  .col-toggle-icon {
+    display: none;
+    font-size: 12px;
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+  }
+  .col-body { display: block; }
 
   /* ── DISCLAIMER BAR ── */
   .disclaimer-bar {
